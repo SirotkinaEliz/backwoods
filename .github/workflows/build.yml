@@ -180,6 +180,7 @@ jobs:
             -emit-object -whole-module-optimization \
             -emit-module \
             -emit-module-path "$MOD/arm64-apple-ios.swiftmodule" \
+            -D SWIFT_PACKAGE \
             -Xcc -DSWIFT_PACKAGE \
             -o "$BD/WireGuardKit.o" \
             $SWIFT_FILES
