@@ -141,43 +141,42 @@ jobs:
         run: |
           cd wireguard-apple
 
-          echo ">>> wireguard-apple contents:"
+          echo ">>> wireguard-apple structure:"
           ls -la
-          echo ">>> Package.swift targets:"
-          grep -E "\.target|\.library|name:" Package.swift | head -30 || true
+          grep "name:" Package.swift | head -20
 
-          # WireGuardKit is a Swift Package library — build via SPM
-          echo ">>> Building WireGuardKit via Swift PM for iOS arm64..."
-          swift build \
-            -c release \
-            --triple arm64-apple-ios15.0 \
-            --product WireGuardKit 2>&1 | tail -20
+          # WireGuardKit is a Swift Package product.
+          # Build it with xcodebuild using the Package.swift as project.
+          echo ">>> Building WireGuardKit via xcodebuild (Package.swift)..."
 
-          BUILD_DIR=$(swift build -c release --triple arm64-apple-ios15.0 --show-bin-path 2>/dev/null)
-          echo "Build dir: $BUILD_DIR"
-          ls -la "$BUILD_DIR" | head -20
+          xcodebuild build \
+            -scheme WireGuardKit \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            -derivedDataPath derived_data \
+            2>&1 | grep -E "error:|warning:|BUILD|Compiling" | tail -40
 
-          LIB_PATH=$(find "$BUILD_DIR" -name "libWireGuardKit.a" 2>/dev/null | head -1)
-          MODULE_DIR=$(find "$BUILD_DIR" -name "WireGuardKit.swiftmodule" 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
-          echo "Lib: $LIB_PATH  Module: $MODULE_DIR"
+          echo ">>> Searching for built WireGuardKit.framework..."
+          find derived_data -name "WireGuardKit.framework" -type d 2>/dev/null | head -5
 
-          mkdir -p build/WireGuardKit.framework/Headers
-          mkdir -p build/WireGuardKit.framework/Modules
-
-          if [ -n "$LIB_PATH" ]; then
-            cp "$LIB_PATH" build/WireGuardKit.framework/WireGuardKit
+          FW_PATH=$(find derived_data -name "WireGuardKit.framework" -path "*Release*" -type d 2>/dev/null | head -1)
+          if [ -z "$FW_PATH" ]; then
+            FW_PATH=$(find derived_data -name "WireGuardKit.framework" -type d 2>/dev/null | head -1)
           fi
-          if [ -n "$MODULE_DIR" ]; then
-            cp -r "$MODULE_DIR" build/WireGuardKit.framework/Modules/ 2>/dev/null || true
+          echo "Framework: $FW_PATH"
+
+          if [ -z "$FW_PATH" ]; then
+            echo "Not found. Derived data tree:"
+            find derived_data -type d | head -50
+            exit 1
           fi
 
-          # Minimal Info.plist - write with printf to avoid shell heredoc and YAML issues
-          printf '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>com.wireguard.WireGuardKit</string><key>CFBundleName</key><string>WireGuardKit</string><key>CFBundlePackageType</key><string>FMWK</string><key>CFBundleShortVersionString</key><string>1.0</string><key>CFBundleVersion</key><string>1</string><key>MinimumOSVersion</key><string>15.0</string></dict></plist>' > build/WireGuardKit.framework/Info.plist
-
-          echo ">>> Creating XCFramework..."
           mkdir -p ../telegram-ios/third-party/WireGuardKit
           xcodebuild -create-xcframework \
-            -framework build/WireGuardKit.framework \
+            -framework "$FW_PATH" \
             -output ../telegram-ios/third-party/WireGuardKit/WireGuardKit.xcframework
 
           echo "WireGuardKit.xcframework created"
