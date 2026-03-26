@@ -103,10 +103,39 @@ jobs:
       - name: "📥 Клонирование Telegram-iOS"
         run: |
           echo ">>> Клонирую Telegram-iOS (ref: $TELEGRAM_REF)..."
-          git clone --depth 1 --branch "$TELEGRAM_REF" --recursive "$TELEGRAM_REPO" telegram-ios || {
+          git clone --depth 1 --branch "$TELEGRAM_REF" "$TELEGRAM_REPO" telegram-ios 2>/dev/null || {
             echo "⚠️  Ветка $TELEGRAM_REF не найдена, пробую без --branch..."
-            git clone --depth 1 --recursive "$TELEGRAM_REPO" telegram-ios
+            git clone --depth 1 "$TELEGRAM_REPO" telegram-ios
           }
+
+          cd telegram-ios
+
+          # tgcalls is a private Bitbucket repo (mobyrix/tgcalls) — skip it.
+          # It's only needed for VoIP calls, not for VPN functionality.
+          if [ -f ".gitmodules" ]; then
+            python3 - <<'PYEOF'
+import re
+with open('.gitmodules', 'r') as f:
+    content = f.read()
+# Remove any submodule block that references tgcalls
+content = re.sub(
+    r'\[submodule "[^"]*tgcalls[^"]*"\][^\[]*',
+    '',
+    content,
+    flags=re.DOTALL
+)
+with open('.gitmodules', 'w') as f:
+    f.write(content)
+print('Patched .gitmodules: removed tgcalls private submodule')
+PYEOF
+          fi
+
+          git submodule update --init --recursive --depth 1 || {
+            echo "⚠️  --depth 1 не поддерживается для submodules, пробую без него..."
+            git submodule update --init --recursive
+          }
+
+          cd ..
           echo "✅ Telegram-iOS клонирован"
           ls -la telegram-ios/
 
