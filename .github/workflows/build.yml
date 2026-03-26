@@ -143,48 +143,57 @@ jobs:
 
           echo "=== wireguard-apple structure ==="
           ls -la
-          echo "=== Package.swift ==="
-          cat Package.swift
 
-          echo "=== xcodebuild -list ==="
-          xcodebuild -list -project WireGuard.xcodeproj 2>&1 || true
+          echo "=== Available schemes ==="
+          xcodebuild -list -project WireGuard.xcodeproj 2>&1 | head -40
 
-          # WireGuardKit is defined in Package.swift as a library product.
-          # WireGuard.xcodeproj contains only "WireGuard iOS" / "WireGuard macOS" schemes.
-          # Fix: rename xcodeproj so xcodebuild uses Package.swift instead.
+          # ПРАВИЛЬНЫЙ подход:
+          # 1. Используем WireGuard.xcodeproj (НЕ переименовываем)
+          # 2. Схема "WireGuard iOS" автоматически через Build Phases запускает
+          #    make в Sources/WireGuardKitGo/ → собирает libwg-go.a
+          # 3. Потом компилирует WireGuardKit.framework
+          # 4. Signing полностью отключаем
 
-          echo "=== Moving WireGuard.xcodeproj aside ==="
-          mv WireGuard.xcodeproj WireGuard.xcodeproj.bak 2>/dev/null || true
-
-          echo "=== Available after rename ==="
-          ls -la
-
-          echo "=== Building WireGuardKit from Package.swift ==="
           WGKIT_DERIVED="$RUNNER_TEMP/wgkit-derived"
+
+          echo "=== Building WireGuard iOS (Go + WireGuardKit) ==="
           xcodebuild build \
-            -scheme WireGuardKit \
+            -project WireGuard.xcodeproj \
+            -scheme "WireGuard iOS" \
             -destination "generic/platform=iOS" \
             -configuration Release \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             -derivedDataPath "$WGKIT_DERIVED" \
-            2>&1 | tail -60
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee /tmp/wg-build.log | tail -60 || true
 
-          DERIVED="$WGKIT_DERIVED"
+          echo "=== Frameworks in derived data ==="
+          find "$WGKIT_DERIVED" -name "*.framework" -type d 2>/dev/null | head -30
 
-          echo "=== Searching for framework ==="
-          find "$DERIVED" -name "*.framework" -type d 2>/dev/null | head -10
+          # Swift Packages собираются в PackageFrameworks/
+          FW_PATH=$(find "$WGKIT_DERIVED" -name "WireGuardKit.framework" -type d 2>/dev/null \
+            | grep -v simulator | head -1)
 
-          FW_PATH=$(find "$DERIVED" -name "WireGuardKit.framework" -type d 2>/dev/null | head -1)
           if [ -z "$FW_PATH" ]; then
-            FW_PATH=$(find "$DERIVED" -name "*.framework" -path "*iphoneos*" -type d 2>/dev/null | head -1)
+            # Fallback: внутри .app bundle
+            FW_PATH=$(find "$WGKIT_DERIVED" -path "*WireGuard.app/Frameworks/WireGuardKit.framework" \
+              -type d 2>/dev/null | head -1)
           fi
-          echo "Framework: $FW_PATH"
 
           if [ -z "$FW_PATH" ]; then
-            echo "No framework found. Full tree (50 lines):"
-            find "$DERIVED" -type d 2>/dev/null | head -50
+            echo "ERROR: WireGuardKit.framework не найден"
+            echo "=== Полное дерево derived_data ==="
+            find "$WGKIT_DERIVED" -type d 2>/dev/null | head -80
+            echo "=== Последние ошибки build.log ==="
+            grep "error:" /tmp/wg-build.log | tail -20 || true
             exit 1
           fi
+
+          echo "Framework: $FW_PATH"
 
           mkdir -p ../telegram-ios/third-party/WireGuardKit
           xcodebuild -create-xcframework \
