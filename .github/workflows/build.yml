@@ -140,69 +140,74 @@ jobs:
       - name: "🔧 Сборка WireGuardKit.xcframework"
         run: |
           cd wireguard-apple
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          TARGET="arm64-apple-ios15.0"
+          BD="$RUNNER_TEMP/wgkit-manual"
+          FW="$BD/WireGuardKit.framework"
+          MOD="$FW/Modules/WireGuardKit.swiftmodule"
+          mkdir -p "$BD" "$FW/Headers" "$MOD"
 
-          WGKIT_DERIVED="$RUNNER_TEMP/wgkit-derived"
-          # xcodebuild кладёт продукты в <derivedData>/Build/Products/Release-iphoneos/
-          # Именно там линкер их ищет. Создаём путь заранее и кладём libwg-go.a туда.
-          CONF_BUILD_DIR="$WGKIT_DERIVED/Build/Products/Release-iphoneos"
-          mkdir -p "$CONF_BUILD_DIR"
-
-          # ── Шаг 1: Build libwg-go.a прямо в CONFIGURATION_BUILD_DIR ──────────
-          # Именно это делает Build Phase скрипт в WireGuard.xcodeproj при нормальной сборке.
-          # Package.swift не запускает make сам — делаем это вручную.
-          echo "=== Building libwg-go.a for iOS arm64 ==="
+          # 1. libwg-go.a
+          echo "=== [1/5] libwg-go.a ==="
           cd Sources/WireGuardKitGo
-          make \
-            PLATFORM_NAME=iphoneos \
-            ARCHS=arm64 \
-            SDKROOT="$(xcrun --sdk iphoneos --show-sdk-path)" \
-            CONFIGURATION_BUILD_DIR="$CONF_BUILD_DIR" \
-            CONFIGURATION_TEMP_DIR="$WGKIT_DERIVED/Build/Intermediates.noindex/wgkitgo.build"
-
-          echo "libwg-go.a output:"
-          ls -la "$CONF_BUILD_DIR/" | grep wg || echo "(no wg files yet)"
+          make PLATFORM_NAME=iphoneos ARCHS=arm64 SDKROOT="$SDK" \
+            CONFIGURATION_BUILD_DIR="$BD" CONFIGURATION_TEMP_DIR="$BD/.tmp-go"
           cd ../..
+          ls -lh "$BD/libwg-go.a"
 
-          # ── Шаг 2: Patch Package.swift: 5.3→5.5 ────────────────────────────
-          # swift-tools-version:5.3 не знает .macOS(.v12) и .iOS(.v15)
-          echo "=== Patching Package.swift swift-tools-version ==="
-          sed -i '' 's|swift-tools-version:5.3|swift-tools-version:5.5|' Package.swift
-          head -3 Package.swift
+          # 2. WireGuardKitC.o
+          echo "=== [2/5] WireGuardKitC ==="
+          clang -c -target "$TARGET" -isysroot "$SDK" \
+            -I Sources/WireGuardKitC \
+            Sources/WireGuardKitC/key.c Sources/WireGuardKitC/x25519.c \
+            -o "$BD/WireGuardKitC.o"
 
-          # ── Шаг 3: Убираем xcodeproj (нет shared schemes) ───────────────────
-          mv WireGuard.xcodeproj WireGuard.xcodeproj.bak
+          # 3. WireGuardKit Swift → .o + .swiftmodule (без library evolution = без верификации)
+          echo "=== [3/5] WireGuardKit Swift ==="
+          swiftc \
+            -target "$TARGET" -sdk "$SDK" \
+            -module-name WireGuardKit \
+            -I Sources/WireGuardKitC \
+            -I Sources/WireGuardKitGo \
+            -swift-version 5 \
+            -emit-object -whole-module-optimization \
+            -emit-module \
+            -emit-module-path "$MOD/arm64-apple-ios.swiftmodule" \
+            -Xcc -DSWIFT_PACKAGE \
+            -o "$BD/WireGuardKit.o" \
+            Sources/WireGuardKit/*.swift
+          echo "Swift OK"
 
-          # ── Шаг 4: Build WireGuardKit из Package.swift ───────────────────────
-          echo "=== Building WireGuardKit via xcodebuild ==="
-          xcodebuild build \
-            -scheme WireGuardKit \
-            -destination "generic/platform=iOS" \
-            -configuration Release \
-            -derivedDataPath "$WGKIT_DERIVED" \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            SKIP_INSTALL=NO \
-            2>&1 | tail -80
+          # 4. Static framework binary
+          echo "=== [4/5] libtool ==="
+          libtool -static \
+            -o "$FW/WireGuardKit" \
+            "$BD/WireGuardKit.o" \
+            "$BD/WireGuardKitC.o" \
+            "$BD/libwg-go.a"
+          lipo -info "$FW/WireGuardKit"
 
-          # ── Шаг 5: Find framework ────────────────────────────────────────────
-          echo "=== Frameworks found ==="
-          find "$WGKIT_DERIVED" -name "*.framework" -type d 2>/dev/null | head -20
+          # 5. Framework structure
+          echo "=== [5/5] framework assembly ==="
+          cp Sources/WireGuardKitC/WireGuardKitC.h "$FW/Headers/"
+          cp Sources/WireGuardKitGo/wireguard.h    "$FW/Headers/"
+          printf 'framework module WireGuardKit {\n  export *\n}\n' \
+            > "$FW/Modules/module.modulemap"
+          python3 -c "
+import plistlib, pathlib
+d={'CFBundleIdentifier':'com.wireguard.WireGuardKit',
+   'CFBundleName':'WireGuardKit','CFBundlePackageType':'FMWK',
+   'CFBundleShortVersionString':'1.0','CFBundleVersion':'1',
+   'MinimumOSVersion':'15.0'}
+pathlib.Path('$FW/Info.plist').write_bytes(plistlib.dumps(d))
+"
+          find "$FW" -type f | sort
 
-          FW_PATH=$(find "$WGKIT_DERIVED" -name "WireGuardKit.framework" -type d 2>/dev/null | head -1)
-          echo "Framework: $FW_PATH"
-
-          if [ -z "$FW_PATH" ]; then
-            echo "ERROR: WireGuardKit.framework не найден"
-            echo "=== Все .a и .o файлы в derived data ==="
-            find "$WGKIT_DERIVED" \( -name "*.a" -o -name "*.framework" \) 2>/dev/null | head -30
-            find "$WGKIT_DERIVED" -type d 2>/dev/null | head -60
-            exit 1
-          fi
-
+          # 6. xcframework
           mkdir -p ../telegram-ios/third-party/WireGuardKit
           xcodebuild -create-xcframework \
-            -framework "$FW_PATH" \
+            -framework "$FW" \
             -output ../telegram-ios/third-party/WireGuardKit/WireGuardKit.xcframework
-
           echo "WireGuardKit.xcframework created OK"
 
       # ================================================================
