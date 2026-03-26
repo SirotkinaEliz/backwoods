@@ -1,0 +1,18 @@
+{
+    "type": "wireGuard",
+    "wireGuard": {
+        "interface": {
+            "privateKey": "REPLACE_WITH_ACTUAL_CLIENT_PRIVATE_KEY",
+            "addresses": ["10.0.0.2/32"],
+            "dns": ["1.1.1.1", "1.0.0.1"],
+            "mtu": 1280
+        },
+        "peer": {
+            "publicKey": "REPLACE_WITH_SERVER_PUBLIC_KEY",
+            "presharedKey": null,
+            "endpoint": "REPLACE_WITH_SERVER_IP:51820",
+            "allowedIPs": ["0.0.0.0/0", "::/0"],
+            "persistentKeepalive": 25
+        }
+    }
+}

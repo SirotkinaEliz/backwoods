@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+    Backwoods: Main application entitlements
+    Add these entitlements to the main Telegram app target.
+    
+    Integration: Merge into the existing Telegram app entitlements:
+      - Add com.apple.developer.networking.networkextension
+      - Add com.apple.security.application-groups (if not already present)
+-->
+<dict>
+    <!-- Network Extension: Required to manage VPN configurations -->
+    <key>com.apple.developer.networking.networkextension</key>
+    <array>
+        <string>packet-tunnel-provider</string>
+    </array>
+
+    <!-- App Groups: Shared data between main app and packet tunnel extension -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.backwoods.app</string>
+    </array>
+
+    <!-- Personal VPN: Required for NEVPNManager -->
+    <key>com.apple.developer.networking.vpn.api</key>
+    <array>
+        <string>allow-vpn</string>
+    </array>
+</dict>
+</plist>
