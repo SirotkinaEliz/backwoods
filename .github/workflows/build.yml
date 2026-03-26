@@ -193,14 +193,8 @@ jobs:
           cp Sources/WireGuardKitGo/wireguard.h    "$FW/Headers/"
           printf 'framework module WireGuardKit {\n  export *\n}\n' \
             > "$FW/Modules/module.modulemap"
-          python3 -c "
-import plistlib, pathlib
-d={'CFBundleIdentifier':'com.wireguard.WireGuardKit',
-   'CFBundleName':'WireGuardKit','CFBundlePackageType':'FMWK',
-   'CFBundleShortVersionString':'1.0','CFBundleVersion':'1',
-   'MinimumOSVersion':'15.0'}
-pathlib.Path('$FW/Info.plist').write_bytes(plistlib.dumps(d))
-"
+          printf '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>com.wireguard.WireGuardKit</string><key>CFBundleName</key><string>WireGuardKit</string><key>CFBundlePackageType</key><string>FMWK</string><key>CFBundleShortVersionString</key><string>1.0</string><key>CFBundleVersion</key><string>1</string><key>MinimumOSVersion</key><string>15.0</string></dict></plist>' \
+            > "$FW/Info.plist"
           find "$FW" -type f | sort
 
           # 6. xcframework
