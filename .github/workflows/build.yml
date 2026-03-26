@@ -146,11 +146,8 @@ jobs:
           echo ">>> Package.swift targets:"
           grep -E "\.target|\.library|name:" Package.swift | head -30 || true
 
-          # WireGuardKit is a Swift Package library, NOT an Xcode scheme.
-          # Build it via swift build targeting iOS arm64.
-          echo ">>> Building WireGuardKit via Swift PM for iOS..."
-
-          # Build static library for iOS arm64
+          # WireGuardKit is a Swift Package library — build via SPM
+          echo ">>> Building WireGuardKit via Swift PM for iOS arm64..."
           swift build \
             -c release \
             --triple arm64-apple-ios15.0 \
@@ -160,38 +157,35 @@ jobs:
           echo "Build dir: $BUILD_DIR"
           ls -la "$BUILD_DIR" | head -20
 
-          # Find the built module/lib
-          MODULE_DIR=$(find "$BUILD_DIR" -name "WireGuardKit.swiftmodule" | head -1 | xargs dirname 2>/dev/null || echo "")
-          LIB_PATH=$(find "$BUILD_DIR" -name "libWireGuardKit.a" | head -1 || echo "")
-          echo "Module dir: $MODULE_DIR"
-          echo "Lib: $LIB_PATH"
+          LIB_PATH=$(find "$BUILD_DIR" -name "libWireGuardKit.a" 2>/dev/null | head -1)
+          MODULE_DIR=$(find "$BUILD_DIR" -name "WireGuardKit.swiftmodule" 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+          echo "Lib: $LIB_PATH  Module: $MODULE_DIR"
 
-          # Create a manual framework from the built artifacts
           mkdir -p build/WireGuardKit.framework/Headers
           mkdir -p build/WireGuardKit.framework/Modules
 
           if [ -n "$LIB_PATH" ]; then
             cp "$LIB_PATH" build/WireGuardKit.framework/WireGuardKit
           fi
-
-          # Copy Swift module interface
           if [ -n "$MODULE_DIR" ]; then
             cp -r "$MODULE_DIR" build/WireGuardKit.framework/Modules/ 2>/dev/null || true
           fi
 
-          # Create minimal Info.plist
-          cat > build/WireGuardKit.framework/Info.plist << 'INFOPLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>CFBundleIdentifier</key><string>com.wireguard.WireGuardKit</string>
-  <key>CFBundleName</key><string>WireGuardKit</string>
-  <key>CFBundlePackageType</key><string>FMWK</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>CFBundleVersion</key><string>1</string>
-  <key>MinimumOSVersion</key><string>15.0</string>
-</dict></plist>
-INFOPLIST
+          # Minimal Info.plist without shell heredoc (avoid YAML << conflict)
+          python3 -c "
+import plistlib, os
+d = {
+  'CFBundleIdentifier': 'com.wireguard.WireGuardKit',
+  'CFBundleName': 'WireGuardKit',
+  'CFBundlePackageType': 'FMWK',
+  'CFBundleShortVersionString': '1.0',
+  'CFBundleVersion': '1',
+  'MinimumOSVersion': '15.0',
+}
+with open('build/WireGuardKit.framework/Info.plist', 'wb') as f:
+    plistlib.dump(d, f)
+print('Info.plist written')
+"
 
           echo ">>> Creating XCFramework..."
           mkdir -p ../telegram-ios/third-party/WireGuardKit
