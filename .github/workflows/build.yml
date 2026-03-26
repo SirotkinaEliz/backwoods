@@ -155,15 +155,22 @@ jobs:
           cd ../..
           ls -lh "$BD/libwg-go.a"
 
-          # 2. WireGuardKitC.o
+          # 2. WireGuardKitC — compile each .c separately
           echo "=== [2/5] WireGuardKitC ==="
           clang -c -target "$TARGET" -isysroot "$SDK" \
             -I Sources/WireGuardKitC \
-            Sources/WireGuardKitC/key.c Sources/WireGuardKitC/x25519.c \
-            -o "$BD/WireGuardKitC.o"
+            Sources/WireGuardKitC/key.c \
+            -o "$BD/key.o"
+          clang -c -target "$TARGET" -isysroot "$SDK" \
+            -I Sources/WireGuardKitC \
+            Sources/WireGuardKitC/x25519.c \
+            -o "$BD/x25519.o"
+          echo "WireGuardKitC OK"
 
           # 3. WireGuardKit Swift → .o + .swiftmodule (без library evolution = без верификации)
           echo "=== [3/5] WireGuardKit Swift ==="
+          SWIFT_FILES=$(find Sources/WireGuardKit -name '*.swift' -type f | sort)
+          echo "Compiling: $SWIFT_FILES"
           swiftc \
             -target "$TARGET" -sdk "$SDK" \
             -module-name WireGuardKit \
@@ -175,7 +182,7 @@ jobs:
             -emit-module-path "$MOD/arm64-apple-ios.swiftmodule" \
             -Xcc -DSWIFT_PACKAGE \
             -o "$BD/WireGuardKit.o" \
-            Sources/WireGuardKit/*.swift
+            $SWIFT_FILES
           echo "Swift OK"
 
           # 4. Static framework binary
@@ -183,7 +190,8 @@ jobs:
           libtool -static \
             -o "$FW/WireGuardKit" \
             "$BD/WireGuardKit.o" \
-            "$BD/WireGuardKitC.o" \
+            "$BD/key.o" \
+            "$BD/x25519.o" \
             "$BD/libwg-go.a"
           lipo -info "$FW/WireGuardKit"
 
