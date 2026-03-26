@@ -325,6 +325,7 @@ jobs:
             --configurationPath="build-system/appstore-configuration.json" \
             --buildNumber="$(date +%Y%m%d%H%M)" \
             --configuration=release_arm64 \
+            --xcodeManagedCodesigning \
             2>&1 | tee build.log
 
           echo "✅ Сборка завершена"
