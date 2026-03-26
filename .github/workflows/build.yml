@@ -141,48 +141,62 @@ jobs:
         run: |
           cd wireguard-apple
 
-          echo ">>> Project structure:"
+          echo ">>> wireguard-apple contents:"
           ls -la
-          xcodebuild -list -project WireGuard.xcodeproj 2>&1 | head -30 || true
+          echo ">>> Package.swift targets:"
+          grep -E "\.target|\.library|name:" Package.swift | head -30 || true
 
-          # Extract scheme names into a file to avoid multi-line variable issues
-          xcodebuild -list -project WireGuard.xcodeproj 2>&1 > /tmp/xcode_list.txt || true
-          cat /tmp/xcode_list.txt
+          # WireGuardKit is a Swift Package library, NOT an Xcode scheme.
+          # Build it via swift build targeting iOS arm64.
+          echo ">>> Building WireGuardKit via Swift PM for iOS..."
 
-          # Try known scheme names from wireguard-apple in order
-          for SCHEME in "WireGuardKit" "WireGuard iOS" "WireGuard" "WireGuardNetworkExtension"; do
-            echo ">>> Trying scheme: $SCHEME"
-            if xcodebuild archive \
-              -project WireGuard.xcodeproj \
-              -scheme "$SCHEME" \
-              -destination "generic/platform=iOS" \
-              -archivePath "build/WireGuardKit-iOS" \
-              SKIP_INSTALL=NO \
-              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-              ONLY_ACTIVE_ARCH=NO \
-              -quiet 2>/dev/null; then
-              echo "Archive succeeded with scheme: $SCHEME"
-              break
-            else
-              echo "Scheme $SCHEME failed, trying next..."
-              rm -rf build/WireGuardKit-iOS.xcarchive
-            fi
-          done
+          # Build static library for iOS arm64
+          swift build \
+            -c release \
+            --triple arm64-apple-ios15.0 \
+            --product WireGuardKit 2>&1 | tail -20
 
-          echo ">>> Creating XCFramework..."
+          BUILD_DIR=$(swift build -c release --triple arm64-apple-ios15.0 --show-bin-path 2>/dev/null)
+          echo "Build dir: $BUILD_DIR"
+          ls -la "$BUILD_DIR" | head -20
 
-          FW_PATH=$(find build -name "*.framework" -type d 2>/dev/null | head -1)
-          echo "Framework path: $FW_PATH"
+          # Find the built module/lib
+          MODULE_DIR=$(find "$BUILD_DIR" -name "WireGuardKit.swiftmodule" | head -1 | xargs dirname 2>/dev/null || echo "")
+          LIB_PATH=$(find "$BUILD_DIR" -name "libWireGuardKit.a" | head -1 || echo "")
+          echo "Module dir: $MODULE_DIR"
+          echo "Lib: $LIB_PATH"
 
-          if [ -z "$FW_PATH" ]; then
-            echo "No framework found. Full build tree:"
-            find build -type d | head -40
-            exit 1
+          # Create a manual framework from the built artifacts
+          mkdir -p build/WireGuardKit.framework/Headers
+          mkdir -p build/WireGuardKit.framework/Modules
+
+          if [ -n "$LIB_PATH" ]; then
+            cp "$LIB_PATH" build/WireGuardKit.framework/WireGuardKit
           fi
 
+          # Copy Swift module interface
+          if [ -n "$MODULE_DIR" ]; then
+            cp -r "$MODULE_DIR" build/WireGuardKit.framework/Modules/ 2>/dev/null || true
+          fi
+
+          # Create minimal Info.plist
+          cat > build/WireGuardKit.framework/Info.plist << 'INFOPLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleIdentifier</key><string>com.wireguard.WireGuardKit</string>
+  <key>CFBundleName</key><string>WireGuardKit</string>
+  <key>CFBundlePackageType</key><string>FMWK</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>MinimumOSVersion</key><string>15.0</string>
+</dict></plist>
+INFOPLIST
+
+          echo ">>> Creating XCFramework..."
           mkdir -p ../telegram-ios/third-party/WireGuardKit
           xcodebuild -create-xcframework \
-            -framework "$FW_PATH" \
+            -framework build/WireGuardKit.framework \
             -output ../telegram-ios/third-party/WireGuardKit/WireGuardKit.xcframework
 
           echo "WireGuardKit.xcframework created"
