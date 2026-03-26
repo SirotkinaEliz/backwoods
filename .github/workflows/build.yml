@@ -151,27 +151,25 @@ jobs:
 
           # WireGuardKit is defined in Package.swift as a library product.
           # WireGuard.xcodeproj contains only "WireGuard iOS" / "WireGuard macOS" schemes.
-          # xcodebuild finds xcodeproj automatically and fails on "WireGuardKit" scheme.
-          # Fix: work from a temp dir that has NO xcodeproj nearby, using -package-path.
+          # Fix: rename xcodeproj so xcodebuild uses Package.swift instead.
 
-          echo "=== Building WireGuardKit from Package.swift (temp dir) ==="
-          WGKIT_SRC="$PWD"
-          WGKIT_BUILD="$RUNNER_TEMP/wgkit-build"
-          mkdir -p "$WGKIT_BUILD"
+          echo "=== Moving WireGuard.xcodeproj aside ==="
+          mv WireGuard.xcodeproj WireGuard.xcodeproj.bak 2>/dev/null || true
 
-          cd "$WGKIT_BUILD"
+          echo "=== Available after rename ==="
+          ls -la
+
+          echo "=== Building WireGuardKit from Package.swift ==="
+          WGKIT_DERIVED="$RUNNER_TEMP/wgkit-derived"
           xcodebuild build \
             -scheme WireGuardKit \
             -destination "generic/platform=iOS" \
             -configuration Release \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            -derivedDataPath "$WGKIT_BUILD/derived_data" \
-            SWIFT_PACKAGE_PATH="$WGKIT_SRC" \
+            -derivedDataPath "$WGKIT_DERIVED" \
             2>&1 | tail -60
 
-          # Back to wireguard-apple dir for the find
-          cd "$WGKIT_SRC"
-          DERIVED="$WGKIT_BUILD/derived_data"
+          DERIVED="$WGKIT_DERIVED"
 
           echo "=== Searching for framework ==="
           find "$DERIVED" -name "*.framework" -type d 2>/dev/null | head -10
