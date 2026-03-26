@@ -171,21 +171,8 @@ jobs:
             cp -r "$MODULE_DIR" build/WireGuardKit.framework/Modules/ 2>/dev/null || true
           fi
 
-          # Minimal Info.plist without shell heredoc (avoid YAML << conflict)
-          python3 -c "
-import plistlib, os
-d = {
-  'CFBundleIdentifier': 'com.wireguard.WireGuardKit',
-  'CFBundleName': 'WireGuardKit',
-  'CFBundlePackageType': 'FMWK',
-  'CFBundleShortVersionString': '1.0',
-  'CFBundleVersion': '1',
-  'MinimumOSVersion': '15.0',
-}
-with open('build/WireGuardKit.framework/Info.plist', 'wb') as f:
-    plistlib.dump(d, f)
-print('Info.plist written')
-"
+          # Minimal Info.plist - write with printf to avoid shell heredoc and YAML issues
+          printf '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>com.wireguard.WireGuardKit</string><key>CFBundleName</key><string>WireGuardKit</string><key>CFBundlePackageType</key><string>FMWK</string><key>CFBundleShortVersionString</key><string>1.0</string><key>CFBundleVersion</key><string>1</string><key>MinimumOSVersion</key><string>15.0</string></dict></plist>' > build/WireGuardKit.framework/Info.plist
 
           echo ">>> Creating XCFramework..."
           mkdir -p ../telegram-ios/third-party/WireGuardKit
