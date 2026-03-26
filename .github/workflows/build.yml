@@ -141,64 +141,51 @@ jobs:
         run: |
           cd wireguard-apple
 
-          echo ">>> Available schemes in WireGuard.xcodeproj:"
-          xcodebuild -list -project WireGuard.xcodeproj 2>&1 || true
+          echo ">>> Project structure:"
+          ls -la
+          xcodebuild -list -project WireGuard.xcodeproj 2>&1 | head -30 || true
 
-          # Auto-detect the WireGuardKit scheme name
-          SCHEME=$(xcodebuild -list -project WireGuard.xcodeproj 2>&1 \
-            | grep -i "WireGuardKit" | head -1 | xargs)
-          if [ -z "$SCHEME" ]; then
-            # Fallback: try first scheme containing WireGuard
-            SCHEME=$(xcodebuild -list -project WireGuard.xcodeproj 2>&1 \
-              | grep -i "WireGuard" | head -1 | xargs)
-          fi
-          echo ">>> Using scheme: $SCHEME"
+          # Extract scheme names into a file to avoid multi-line variable issues
+          xcodebuild -list -project WireGuard.xcodeproj 2>&1 > /tmp/xcode_list.txt || true
+          cat /tmp/xcode_list.txt
 
-          # Build for iOS device (arm64)
-          xcodebuild archive \
-            -project WireGuard.xcodeproj \
-            -scheme "$SCHEME" \
-            -destination "generic/platform=iOS" \
-            -archivePath build/WireGuardKit-iOS \
-            SKIP_INSTALL=NO \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            ONLY_ACTIVE_ARCH=NO \
-            -quiet || {
-              echo "archive failed, trying xcodebuild build..."
-              xcodebuild build \
-                -project WireGuard.xcodeproj \
-                -scheme "$SCHEME" \
-                -destination "generic/platform=iOS" \
-                -configuration Release \
-                BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-                ONLY_ACTIVE_ARCH=NO \
-                CONFIGURATION_BUILD_DIR="$(pwd)/build/Release-iphoneos" \
-                -quiet
-          }
+          # Try known scheme names from wireguard-apple in order
+          for SCHEME in "WireGuardKit" "WireGuard iOS" "WireGuard" "WireGuardNetworkExtension"; do
+            echo ">>> Trying scheme: $SCHEME"
+            if xcodebuild archive \
+              -project WireGuard.xcodeproj \
+              -scheme "$SCHEME" \
+              -destination "generic/platform=iOS" \
+              -archivePath "build/WireGuardKit-iOS" \
+              SKIP_INSTALL=NO \
+              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+              ONLY_ACTIVE_ARCH=NO \
+              -quiet 2>/dev/null; then
+              echo "Archive succeeded with scheme: $SCHEME"
+              break
+            else
+              echo "Scheme $SCHEME failed, trying next..."
+              rm -rf build/WireGuardKit-iOS.xcarchive
+            fi
+          done
 
           echo ">>> Creating XCFramework..."
 
-          FW_PATH=$(find build -name "WireGuardKit.framework" -type d | head -1)
+          FW_PATH=$(find build -name "*.framework" -type d 2>/dev/null | head -1)
+          echo "Framework path: $FW_PATH"
 
           if [ -z "$FW_PATH" ]; then
-            echo "WireGuardKit.framework not found, looking for any framework..."
-            FW_PATH=$(find build -name "*.framework" -type d | head -1)
-          fi
-
-          if [ -z "$FW_PATH" ]; then
-            echo "No framework found after build. Contents of build/:"
-            find build -type d | head -30
+            echo "No framework found. Full build tree:"
+            find build -type d | head -40
             exit 1
           fi
-
-          echo "Found: $FW_PATH"
 
           mkdir -p ../telegram-ios/third-party/WireGuardKit
           xcodebuild -create-xcframework \
             -framework "$FW_PATH" \
             -output ../telegram-ios/third-party/WireGuardKit/WireGuardKit.xcframework
 
-          echo "✅ WireGuardKit.xcframework создан"
+          echo "WireGuardKit.xcframework created"
 
       # ================================================================
       # ПРИМЕНЕНИЕ ПАТЧЕЙ BACKWOODS
