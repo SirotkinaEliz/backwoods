@@ -167,7 +167,7 @@ jobs:
             -o "$BD/x25519.o"
           echo "WireGuardKitC OK"
 
-          # 3. WireGuardKit Swift → .o + .swiftmodule (без library evolution = без верификации)
+          # 3. WireGuardKit Swift → .o + .swiftmodule + .swiftinterface
           echo "=== [3/5] WireGuardKit Swift ==="
           SWIFT_FILES=$(find Sources/WireGuardKit -name '*.swift' -type f | sort)
           echo "Compiling: $SWIFT_FILES"
@@ -180,6 +180,9 @@ jobs:
             -emit-object -whole-module-optimization \
             -emit-module \
             -emit-module-path "$MOD/arm64-apple-ios.swiftmodule" \
+            -enable-library-evolution \
+            -emit-module-interface \
+            -emit-module-interface-path "$MOD/arm64-apple-ios.swiftinterface" \
             -D SWIFT_PACKAGE \
             -Xcc -DSWIFT_PACKAGE \
             -o "$BD/WireGuardKit.o" \
