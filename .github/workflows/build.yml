@@ -329,6 +329,11 @@ jobs:
           echo "  Patched versions.json:"
           cat versions.json
 
+          # Add missing nicegram-specific keys to appstore-configuration.json
+          CONF="build-system/appstore-configuration.json"
+          sed -i '' 's/"enable_icloud": true/"enable_icloud": true, "google_client_scheme": "", "ng_env": "production"/' "$CONF"
+          echo "  Patched appstore-configuration.json"
+
           python3 build-system/Make/Make.py \
             --cacheDir="$HOME/bazel-cache" \
             build \
