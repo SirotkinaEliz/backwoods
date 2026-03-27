@@ -1,29 +1,39 @@
 #!/usr/bin/env python3
-"""Patch nicegram Make.py to call set_disable_provisioning_profiles() when xcodeManagedCodesigning is used."""
-import sys, re
+"""Patch Make.py for Backwoods CI: disable provisioning profiles and extensions."""
+import sys
 
 path = sys.argv[1]
 with open(path, 'r') as f:
     content = f.read()
 
-# Add set_disable_provisioning_profiles() before invoke_build() in build()
-# Original:
-#     bazel_command_line.invoke_build()
-# Patched:
-#     if getattr(arguments, 'xcodeManagedCodesigning', False):
-#         bazel_command_line.set_disable_provisioning_profiles()
-#     bazel_command_line.invoke_build()
+patched = False
 
-old = '    bazel_command_line.invoke_build()'
-new = ('    if getattr(arguments, "xcodeManagedCodesigning", False):\n'
-       '        bazel_command_line.set_disable_provisioning_profiles()\n'
-       '    bazel_command_line.invoke_build()')
+# Patch: inject CI flags into common_args (added after '--verbose_failures')
+# This ensures --//Telegram:disableProvisioningProfiles and --//Telegram:disableExtensions
+# are passed to every bazel invocation made by Make.py
+old = "            '--verbose_failures',"
+new = ("            '--verbose_failures',\n"
+       "            '--//Telegram:disableProvisioningProfiles',  # Backwoods CI\n"
+       "            '--//Telegram:disableExtensions',            # Backwoods CI")
 
-patched = content.replace(old, new)
-if patched == content:
-    print("WARNING: patch not applied - pattern not found")
-    sys.exit(0)
+if old in content:
+    content = content.replace(old, new, 1)
+    patched = True
+    print("Make.py patched: disableProvisioningProfiles + disableExtensions added to common_args")
+else:
+    print("WARNING: '--verbose_failures' not found in common_args — trying fallback")
+    # Fallback: patch invoke_build() to always set disable_provisioning_profiles
+    old2 = '        if self.disable_provisioning_profiles:'
+    new2 = ('        self.disable_provisioning_profiles = True  # Backwoods CI\n'
+            '        if self.disable_provisioning_profiles:')
+    if old2 in content:
+        content = content.replace(old2, new2, 1)
+        patched = True
+        print("Make.py patched (fallback): disable_provisioning_profiles forced True")
+    else:
+        print("ERROR: no patch pattern found — Make.py not modified")
 
-with open(path, 'w') as f:
-    f.write(patched)
-print("Make.py patched: set_disable_provisioning_profiles() added for xcodeManagedCodesigning")
+if patched:
+    with open(path, 'w') as f:
+        f.write(content)
+    print("Make.py saved OK")
