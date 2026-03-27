@@ -334,6 +334,9 @@ jobs:
           sed -i '' 's/"enable_icloud": true/"enable_icloud": true, "google_client_scheme": "", "ng_env": "production"/' "$CONF"
           echo "  Patched appstore-configuration.json"
 
+          # Patch Make.py to call set_disable_provisioning_profiles() with xcodeManagedCodesigning
+          python3 ../backwoods/scripts/patch-make.py build-system/Make/Make.py
+
           python3 build-system/Make/Make.py \
             --cacheDir="$HOME/bazel-cache" \
             build \
