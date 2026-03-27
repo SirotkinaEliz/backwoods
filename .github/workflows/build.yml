@@ -113,13 +113,7 @@ jobs:
           # Init submodules (official Telegram-iOS submodules are all public GitHub)
           git submodule init
 
-          # Skip TgVoipWebrtc (heavy VoIP submodule, not needed for VPN)
-          git config --remove-section "submodule.submodules/TgVoipWebrtc" 2>/dev/null || true
-          git config --remove-section "submodule.submodules/TgVoipWebrtc/tgcalls" 2>/dev/null || true
-          # Also skip libtgvoip if present
-          git config --remove-section "submodule.submodules/libtgvoip" 2>/dev/null || true
-
-          git submodule update --recursive --jobs 4
+          git submodule update --recursive --depth 1 --jobs 4
 
           cd ..
           echo "Telegram-iOS cloned OK"
