@@ -35,7 +35,7 @@ on:
       telegram_ref:
         description: 'Telegram-iOS git ref (тег или ветка)'
         required: false
-        default: 'master'
+        default: 'release-12.0'
       skip_tests:
         description: 'Пропустить тесты'
         required: false
@@ -51,7 +51,7 @@ env:
   XCODE_VERSION: "15.4"
   GO_VERSION: "1.22"
   TELEGRAM_REPO: "https://github.com/TelegramMessenger/Telegram-iOS.git"
-  TELEGRAM_REF: ${{ github.event.inputs.telegram_ref || 'master' }}
+  TELEGRAM_REF: ${{ github.event.inputs.telegram_ref || 'release-12.0' }}
   WIREGUARD_REPO: "https://github.com/WireGuard/wireguard-apple.git"
 
 jobs:
