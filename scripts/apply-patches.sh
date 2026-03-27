@@ -77,45 +77,63 @@ echo "  ✅ Модули скопированы"
 echo ""
 echo ">>> Шаг 1.5: Патч rules_apple provisioning_profile.bzl..."
 
-PROV_BZL="$TELEGRAM_DIR/build-system/bazel-rules/rules_apple/apple/internal/partials/provisioning_profile.bzl"
+RULES_APPLE_DIR="$TELEGRAM_DIR/build-system/bazel-rules/rules_apple/apple/internal"
+
+PROV_BZL="$RULES_APPLE_DIR/partials/provisioning_profile.bzl"
 if [ -f "$PROV_BZL" ]; then
     PROV_PATCH=$(mktemp)
     cat << 'PYEOF' > "$PROV_PATCH"
-import sys
+import sys, re
 
 path = sys.argv[1]
 with open(path, 'r') as f:
     content = f.read()
 
-# Pattern: if not profile_artifact: fail(...)
-old = '    if not profile_artifact:\n        fail(\n            "\\n".join([\n                "ERROR: In {}:".format(str(rule_label)),\n                "Building for device, but no provisioning_profile attribute was set.",\n            ]),\n        )'
-new = '    if not profile_artifact:\n        # Backwoods CI: allow unsigned builds without provisioning profile\n        return struct(bundle_files = [])'
-
-if old in content:
-    content = content.replace(old, new)
+new_content = re.sub(
+    r'if not profile_artifact:\s*\n(\s*)fail\(',
+    'if not profile_artifact:\n\\1# Backwoods CI: allow unsigned builds\n\\1return struct(bundle_files = [])\n\\1fail(',
+    content
+)
+if new_content != content:
     with open(path, 'w') as f:
-        f.write(content)
-    print("  ✅ provisioning_profile.bzl пропатчен (None -> empty struct)")
+        f.write(new_content)
+    print("  ✅ provisioning_profile.bzl пропатчен")
 else:
-    # Try a more flexible approach
-    import re
-    new_content = re.sub(
-        r'(    if not profile_artifact:\s*\n\s*fail\([^)]+\)\s*\n\s*\))',
-        '    if not profile_artifact:\n        # Backwoods CI: allow unsigned builds\n        return struct(bundle_files = [])',
-        content,
-        flags=re.DOTALL
-    )
-    if new_content != content:
-        with open(path, 'w') as f:
-            f.write(new_content)
-        print("  ✅ provisioning_profile.bzl пропатчен (regex fallback)")
-    else:
-        print("  ⚠️  provisioning_profile.bzl — паттерн не найден, пропускаем")
+    print("  ⚠️  provisioning_profile.bzl — паттерн не найден")
 PYEOF
     python3 "$PROV_PATCH" "$PROV_BZL"
     rm "$PROV_PATCH"
 else
     echo "  ⚠️  provisioning_profile.bzl не найден по пути: $PROV_BZL"
+fi
+
+CODESIGN_BZL="$RULES_APPLE_DIR/codesigning_support.bzl"
+if [ -f "$CODESIGN_BZL" ]; then
+    CODESIGN_PATCH=$(mktemp)
+    cat << 'PYEOF' > "$CODESIGN_PATCH"
+import sys, re
+
+path = sys.argv[1]
+with open(path, 'r') as f:
+    content = f.read()
+
+# Patch _validate_provisioning_profile: replace fail() with return
+new_content = re.sub(
+    r'(if \(platform_prerequisites\.platform\.is_device and\s*\n\s*rule_descriptor\.requires_signing_for_device and\s*\n\s*not provisioning_profile\):\s*\n)(\s*)fail\([^)]+\)',
+    r'\1\2# Backwoods CI: allow unsigned builds without provisioning profile\n\2return',
+    content
+)
+if new_content != content:
+    with open(path, 'w') as f:
+        f.write(new_content)
+    print("  ✅ codesigning_support.bzl пропатчен (_validate_provisioning_profile)")
+else:
+    print("  ⚠️  codesigning_support.bzl — паттерн не найден")
+PYEOF
+    python3 "$CODESIGN_PATCH" "$CODESIGN_BZL"
+    rm "$CODESIGN_PATCH"
+else
+    echo "  ⚠️  codesigning_support.bzl не найден по пути: $CODESIGN_BZL"
 fi
 
 # ==============================================================================
