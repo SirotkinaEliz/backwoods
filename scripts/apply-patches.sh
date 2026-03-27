@@ -374,16 +374,21 @@ fi
 
 # ==============================================================================
 # ШАГ 6: Патч BrowserUI — замена приватных Bitbucket пакетов заглушками
+# (только для nicegram-ios; пропускается для официального Telegram-iOS)
 # ==============================================================================
 echo ""
-echo ">>> Шаг 6: Патч BrowserUI (замена приватных Bitbucket пакетов)..."
+echo ">>> Шаг 6: Патч BrowserUI (приватные Bitbucket пакеты)..."
 
 cd "$TELEGRAM_DIR"
 
-# 6a. Создаём заглушки NGCore и NicegramWallet
-mkdir -p submodules/BrowserUI/Stubs
+# Проверяем, является ли это сборкой nicegram (есть BrowserUI с приватными deps)
+if [ -f "submodules/BrowserUI/BUILD" ] && grep -q "swiftpkg_nicegram" "submodules/BrowserUI/BUILD" 2>/dev/null; then
+    echo "  Обнаружен nicegram — применяем стабы для NGCore/NicegramWallet..."
 
-cat > submodules/BrowserUI/Stubs/NGCore.swift << 'SWIFT_NGCORE'
+    # 6a. Создаём заглушки
+    mkdir -p submodules/BrowserUI/Stubs
+
+    cat > submodules/BrowserUI/Stubs/NGCore.swift << 'SWIFT_NGCORE'
 // Backwoods: stub replacement for NGCore (private Bitbucket package)
 public enum UrlUtils {
     public static func refersToNicegramApplication(_ url: String) -> Bool {
@@ -392,7 +397,7 @@ public enum UrlUtils {
 }
 SWIFT_NGCORE
 
-cat > submodules/BrowserUI/Stubs/NicegramWallet.swift << 'SWIFT_WALLET'
+    cat > submodules/BrowserUI/Stubs/NicegramWallet.swift << 'SWIFT_WALLET'
 // Backwoods: stub replacement for NicegramWallet (private Bitbucket package)
 import WebKit
 
@@ -403,19 +408,17 @@ public class WalletJsInjector {
 }
 SWIFT_WALLET
 
-echo "  ✅ Stub файлы созданы (NGCore, NicegramWallet)"
+    echo "  ✅ Stub файлы созданы"
 
-# 6b. Патч submodules/BrowserUI/BUILD — заменяем внешние deps на локальные стабы
-BUILD_PATCH=$(mktemp)
-cat << 'PYEOF' > "$BUILD_PATCH"
-import sys
+    # 6b. Патч BrowserUI/BUILD
+    BUILD_PATCH=$(mktemp)
+    cat << 'PYEOF' > "$BUILD_PATCH"
+import sys, re
 
 with open(sys.argv[1], 'r') as f:
     content = f.read()
 
-old = 'NGDEPS = [\n    "@swiftpkg_nicegram_assistant_ios//:NGCore",\n    "@swiftpkg_nicegram_wallet_ios//:NicegramWallet",\n]'
-
-new = '''swift_library(
+new_stubs = '''swift_library(
     name = "NGCoreStub",
     module_name = "NGCore",
     srcs = ["Stubs/NGCore.swift"],
@@ -435,71 +438,52 @@ NGDEPS = [
     ":NicegramWalletStub",
 ]'''
 
-if old in content:
-    content = content.replace(old, new)
+pattern = r'NGDEPS\s*=\s*\[.*?swiftpkg_nicegram.*?\]'
+if re.search(pattern, content, re.DOTALL):
+    content = re.sub(pattern, new_stubs, content, flags=re.DOTALL)
     with open(sys.argv[1], 'w') as f:
         f.write(content)
     print("  BrowserUI/BUILD пропатчен OK")
 else:
-    print("  WARN: BrowserUI/BUILD шаблон NGDEPS не найден — пробуем fuzzy...")
-    # Попробуем найти по отдельным строкам
-    import re
-    pattern = r'NGDEPS\s*=\s*\[.*?swiftpkg_nicegram.*?\]'
-    if re.search(pattern, content, re.DOTALL):
-        content = re.sub(pattern, new, content, flags=re.DOTALL)
-        with open(sys.argv[1], 'w') as f:
-            f.write(content)
-        print("  BrowserUI/BUILD пропатчен (fuzzy) OK")
-    else:
-        print("  WARN: BrowserUI/BUILD NGDEPS не найден — пропускаем")
+    print("  WARN: BrowserUI/BUILD — NGDEPS паттерн не найден, пропускаем")
 PYEOF
+    python3 "$BUILD_PATCH" "submodules/BrowserUI/BUILD"
+    rm "$BUILD_PATCH"
 
-python3 "$BUILD_PATCH" "submodules/BrowserUI/BUILD"
-rm "$BUILD_PATCH"
-
-# 6c. Удаляем приватные Bitbucket пакеты из Package.resolved
-PKG_PATCH=$(mktemp)
-cat << 'PYEOF' > "$PKG_PATCH"
-import json
-
+    # 6c. Package.resolved
+    if [ -f "Package.resolved" ]; then
+        PKG_PATCH=$(mktemp)
+        cat << 'PYEOF' > "$PKG_PATCH"
+import json, sys
 with open('Package.resolved') as f:
     data = json.load(f)
-
 private_ids = {'nicegram-assistant-ios', 'nicegram-wallet-ios'}
 before = len(data['pins'])
 data['pins'] = [p for p in data['pins'] if p.get('identity') not in private_ids]
 after = len(data['pins'])
-
 with open('Package.resolved', 'w') as f:
     json.dump(data, f, indent=2)
-
-print(f"  Package.resolved: удалено {before - after} приватных пакетов (осталось {after})")
+print(f"  Package.resolved: удалено {before - after} приватных пакетов")
 PYEOF
+        python3 "$PKG_PATCH"
+        rm "$PKG_PATCH"
+    fi
 
-python3 "$PKG_PATCH"
-rm "$PKG_PATCH"
+    # 6d. Package.swift
+    [ -f "Package.swift" ] && sed -i '' '/mobyrix\/nicegram-assistant-ios/d' Package.swift && echo "  Package.swift очищен OK"
 
-# 6d. Убираем nicegram-assistant-ios из Package.swift
-sed -i '' '/mobyrix\/nicegram-assistant-ios/d' Package.swift
-# Убираем пустые скобки если package dependencies стал пустым
-python3 - << 'PYEOF'
-with open('Package.swift') as f:
-    content = f.read()
-# Если dependencies: [ <пусто> ], упрощаем
-import re
-content = re.sub(r'dependencies:\s*\[\s*\]', 'dependencies: []', content)
-with open('Package.swift', 'w') as f:
-    f.write(content)
-print("  Package.swift очищен OK")
-PYEOF
+    # 6e. MODULE.bazel
+    [ -f "MODULE.bazel" ] && sed -i '' '/"swiftpkg_nicegram_assistant_ios"/d' MODULE.bazel
+    [ -f "MODULE.bazel" ] && sed -i '' '/"swiftpkg_nicegram_wallet_ios"/d' MODULE.bazel
+    echo "  MODULE.bazel очищен OK"
 
-# 6e. Убираем из MODULE.bazel use_repo()
-sed -i '' '/"swiftpkg_nicegram_assistant_ios"/d' MODULE.bazel
-sed -i '' '/"swiftpkg_nicegram_wallet_ios"/d' MODULE.bazel
-echo "  MODULE.bazel очищен OK"
+    echo "  ✅ Шаг 6 (nicegram-specific) завершён"
+else
+    echo "  Официальный Telegram-iOS — шаг 6 не требуется ✓"
+fi
 
 cd - > /dev/null
-echo ">>> Шаг 6 завершён ✅"
+echo ">>> Шаг 6 завершён"
 
 # ==============================================================================
 # ГОТОВО

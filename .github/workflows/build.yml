@@ -50,7 +50,7 @@ on:
 env:
   XCODE_VERSION: "15.4"
   GO_VERSION: "1.22"
-  TELEGRAM_REPO: "https://github.com/nicegram/nicegram-ios.git"
+  TELEGRAM_REPO: "https://github.com/TelegramMessenger/Telegram-iOS.git"
   TELEGRAM_REF: ${{ github.event.inputs.telegram_ref || 'master' }}
   WIREGUARD_REPO: "https://github.com/WireGuard/wireguard-apple.git"
 
@@ -110,18 +110,16 @@ jobs:
 
           cd telegram-ios
 
-          # Step 1: init registers all submodules from .gitmodules into .git/config
+          # Init submodules (official Telegram-iOS submodules are all public GitHub)
           git submodule init
 
-          # Step 2: remove tgcalls from .git/config ONLY (leave .gitmodules intact).
-          # tgcalls is at git@bitbucket.org:mobyrix/tgcalls.git — private, SSH-only.
-          # It is only used for VoIP; not needed for VPN functionality.
-          git config --remove-section "submodule.submodules/TgVoipWebrtc/tgcalls" 2>/dev/null \
-            && echo "Skipping tgcalls (private Bitbucket)" \
-            || echo "tgcalls section not found in .git/config, continuing"
+          # Skip TgVoipWebrtc (heavy VoIP submodule, not needed for VPN)
+          git config --remove-section "submodule.submodules/TgVoipWebrtc" 2>/dev/null || true
+          git config --remove-section "submodule.submodules/TgVoipWebrtc/tgcalls" 2>/dev/null || true
+          # Also skip libtgvoip if present
+          git config --remove-section "submodule.submodules/libtgvoip" 2>/dev/null || true
 
-          # Step 3: update only the submodules now registered in .git/config (tgcalls excluded)
-          git submodule update --recursive
+          git submodule update --recursive --jobs 4
 
           cd ..
           echo "Telegram-iOS cloned OK"
@@ -328,11 +326,6 @@ jobs:
           sed -i '' "s/\"macos\": \"[^\"]*\"/\"macos\": \"$MACOS_VER\"/" versions.json
           echo "  Patched versions.json:"
           cat versions.json
-
-          # Add missing nicegram-specific keys to appstore-configuration.json
-          CONF="build-system/appstore-configuration.json"
-          sed -i '' 's/"enable_icloud": true/"enable_icloud": true, "google_client_scheme": "", "ng_env": "production"/' "$CONF"
-          echo "  Patched appstore-configuration.json"
 
           # Patch Make.py to call set_disable_provisioning_profiles() with xcodeManagedCodesigning
           python3 ../backwoods/scripts/patch-make.py build-system/Make/Make.py
