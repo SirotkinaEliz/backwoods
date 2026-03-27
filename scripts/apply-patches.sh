@@ -111,24 +111,45 @@ CODESIGN_BZL="$RULES_APPLE_DIR/codesigning_support.bzl"
 if [ -f "$CODESIGN_BZL" ]; then
     CODESIGN_PATCH=$(mktemp)
     cat << 'PYEOF' > "$CODESIGN_PATCH"
-import sys, re
+import sys
 
 path = sys.argv[1]
 with open(path, 'r') as f:
     content = f.read()
 
-# Patch _validate_provisioning_profile: replace fail() with return
-new_content = re.sub(
-    r'(if \(platform_prerequisites\.platform\.is_device and\s*\n\s*rule_descriptor\.requires_signing_for_device and\s*\n\s*not provisioning_profile\):\s*\n)(\s*)fail\([^)]+\)',
-    r'\1\2# Backwoods CI: allow unsigned builds without provisioning profile\n\2return',
-    content
+# Exact string replacement — neutralize _validate_provisioning_profile
+old_block = (
+    'def _validate_provisioning_profile(\n'
+    '        *,\n'
+    '        rule_descriptor,\n'
+    '        platform_prerequisites,\n'
+    '        provisioning_profile):\n'
+    '    # Verify that a provisioning profile was provided for device builds on\n'
+    '    # platforms that require it.\n'
+    '    if (platform_prerequisites.platform.is_device and\n'
+    '        rule_descriptor.requires_signing_for_device and\n'
+    '        not provisioning_profile):\n'
+    '        fail("The provisioning_profile attribute must be set for device " +\n'
+    '             "builds on this platform (%s)." %\n'
+    '             platform_prerequisites.platform_type)'
 )
-if new_content != content:
+new_block = (
+    'def _validate_provisioning_profile(\n'
+    '        *,\n'
+    '        rule_descriptor,\n'
+    '        platform_prerequisites,\n'
+    '        provisioning_profile):\n'
+    '    # Backwoods CI: allow unsigned builds without provisioning profile\n'
+    '    return'
+)
+
+if old_block in content:
+    content = content.replace(old_block, new_block)
     with open(path, 'w') as f:
-        f.write(new_content)
-    print("  ✅ codesigning_support.bzl пропатчен (_validate_provisioning_profile)")
+        f.write(content)
+    print("  ✅ codesigning_support.bzl пропатчен")
 else:
-    print("  ⚠️  codesigning_support.bzl — паттерн не найден")
+    print("  ⚠️  codesigning_support.bzl — точный паттерн не найден, пропускаем")
 PYEOF
     python3 "$CODESIGN_PATCH" "$CODESIGN_BZL"
     rm "$CODESIGN_PATCH"
