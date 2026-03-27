@@ -131,6 +131,19 @@ jobs:
 
       - name: "🔧 Сборка WireGuardKit.xcframework"
         run: |
+          # Patch WireGuardKitC.h for iOS 18.2 SDK (Xcode 16.2):
+          # u_int32_t, u_char, u_int16_t must be imported via <sys/types.h>
+          python3 - <<'PYEOF'
+import pathlib
+h = pathlib.Path("wireguard-apple/Sources/WireGuardKitC/WireGuardKitC.h")
+txt = h.read_text()
+if "#include <sys/types.h>" not in txt:
+    h.write_text("#include <sys/types.h>\n" + txt)
+    print("Patched WireGuardKitC.h with <sys/types.h>")
+else:
+    print("WireGuardKitC.h already has <sys/types.h>")
+PYEOF
+
           cd wireguard-apple
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
           TARGET="arm64-apple-ios15.0"
