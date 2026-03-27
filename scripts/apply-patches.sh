@@ -70,6 +70,55 @@ cp -r "$BACKWOODS_DIR/Tests/"* "$TELEGRAM_DIR/Tests/"
 echo "  ✅ Модули скопированы"
 
 # ==============================================================================
+# ШАГ 1.5: Патч rules_apple — разрешить None provisioning_profile
+# В старых версиях rules_apple (release-12.0 и ниже) None provisioning_profile
+# вызывает fail(). Патчим чтобы вместо fail() возвращался пустой struct.
+# ==============================================================================
+echo ""
+echo ">>> Шаг 1.5: Патч rules_apple provisioning_profile.bzl..."
+
+PROV_BZL="$TELEGRAM_DIR/build-system/bazel-rules/rules_apple/apple/internal/partials/provisioning_profile.bzl"
+if [ -f "$PROV_BZL" ]; then
+    PROV_PATCH=$(mktemp)
+    cat << 'PYEOF' > "$PROV_PATCH"
+import sys
+
+path = sys.argv[1]
+with open(path, 'r') as f:
+    content = f.read()
+
+# Pattern: if not profile_artifact: fail(...)
+old = '    if not profile_artifact:\n        fail(\n            "\\n".join([\n                "ERROR: In {}:".format(str(rule_label)),\n                "Building for device, but no provisioning_profile attribute was set.",\n            ]),\n        )'
+new = '    if not profile_artifact:\n        # Backwoods CI: allow unsigned builds without provisioning profile\n        return struct(bundle_files = [])'
+
+if old in content:
+    content = content.replace(old, new)
+    with open(path, 'w') as f:
+        f.write(content)
+    print("  ✅ provisioning_profile.bzl пропатчен (None -> empty struct)")
+else:
+    # Try a more flexible approach
+    import re
+    new_content = re.sub(
+        r'(    if not profile_artifact:\s*\n\s*fail\([^)]+\)\s*\n\s*\))',
+        '    if not profile_artifact:\n        # Backwoods CI: allow unsigned builds\n        return struct(bundle_files = [])',
+        content,
+        flags=re.DOTALL
+    )
+    if new_content != content:
+        with open(path, 'w') as f:
+            f.write(new_content)
+        print("  ✅ provisioning_profile.bzl пропатчен (regex fallback)")
+    else:
+        print("  ⚠️  provisioning_profile.bzl — паттерн не найден, пропускаем")
+PYEOF
+    python3 "$PROV_PATCH" "$PROV_BZL"
+    rm "$PROV_PATCH"
+else
+    echo "  ⚠️  provisioning_profile.bzl не найден по пути: $PROV_BZL"
+fi
+
+# ==============================================================================
 # ШАГ 2: Патч Telegram/BUILD (основной BUILD файл приложения)
 # ==============================================================================
 echo ""
