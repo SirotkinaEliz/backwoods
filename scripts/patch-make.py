@@ -14,7 +14,8 @@ patched = False
 old = "            '--verbose_failures',"
 new = ("            '--verbose_failures',\n"
        "            '--//Telegram:disableProvisioningProfiles',  # Backwoods CI\n"
-       "            '--//Telegram:disableExtensions',            # Backwoods CI")
+       "            '--//Telegram:disableExtensions',            # Backwoods CI\n"
+       "            '--action_env=DEVELOPER_DIR',               # Backwoods CI: fix ibtool iOS platform")
 
 if old in content:
     content = content.replace(old, new, 1)

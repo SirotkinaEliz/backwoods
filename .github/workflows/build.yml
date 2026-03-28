@@ -333,6 +333,10 @@ jobs:
           # Patch Make.py to call set_disable_provisioning_profiles() with xcodeManagedCodesigning
           python3 ../backwoods/scripts/patch-make.py build-system/Make/Make.py
 
+          # Export DEVELOPER_DIR so Bazel --action_env=DEVELOPER_DIR can inherit it
+          export DEVELOPER_DIR="$(xcode-select -p)"
+          echo "DEVELOPER_DIR: $DEVELOPER_DIR"
+
           python3 build-system/Make/Make.py \
             --cacheDir="$HOME/bazel-cache" \
             build \
