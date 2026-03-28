@@ -305,7 +305,15 @@ jobs:
       # СБОРКА
       # ================================================================
 
-      - name: "🏗 Сборка Telegram IPA"
+      - name: "� Accept Xcode license & init iOS platform"
+        run: |
+          sudo xcodebuild -license accept
+          # Init CoreSimulator so ibtool can find iOS 18.2 platform
+          xcrun simctl list >/dev/null 2>&1 || true
+          echo "Xcode: $(xcodebuild -version | head -1)"
+          echo "iOS SDK: $(xcrun --sdk iphoneos --show-sdk-version)"
+
+      - name: "�🏗 Сборка Telegram IPA"
         working-directory: telegram-ios
         run: |
           echo ">>> Сборка Backwoods IPA..."
