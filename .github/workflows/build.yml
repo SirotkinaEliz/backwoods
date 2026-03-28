@@ -48,7 +48,7 @@ on:
         default: true
 
 env:
-  XCODE_VERSION: "16.2"
+  XCODE_VERSION: "16.4"
   GO_VERSION: "1.22"
   TELEGRAM_REPO: "https://github.com/TelegramMessenger/Telegram-iOS.git"
   TELEGRAM_REF: ${{ github.event.inputs.telegram_ref || 'release-12.0' }}
