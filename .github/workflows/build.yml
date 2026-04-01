@@ -357,30 +357,37 @@ jobs:
           echo ">>> Поиск собранного приложения..."
 
           # Ищем .app в нескольких местах
-          APP_PATH=$(find telegram-ios/bazel-bin -name "Telegram.app" -type d 2>/dev/null | head -1)
+          # Bazel already creates Telegram.ipa — use it directly
+          BAZEL_IPA=$(find telegram-ios/bazel-bin -name "Telegram.ipa" -type f 2>/dev/null | head -1)
 
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find telegram-ios -name "*.app" -type d -path "*/Release*" 2>/dev/null | head -1)
+          if [ -n "$BAZEL_IPA" ]; then
+            echo "  Найден Bazel IPA: $BAZEL_IPA"
+            cp "$BAZEL_IPA" Backwoods.ipa
+          else
+            # Fallback: find .app and create IPA manually
+            APP_PATH=$(find telegram-ios/bazel-bin -name "Telegram.app" -type d 2>/dev/null | head -1)
+
+            if [ -z "$APP_PATH" ]; then
+              APP_PATH=$(find telegram-ios -name "*.app" -type d -path "*/Release*" 2>/dev/null | head -1)
+            fi
+
+            if [ -z "$APP_PATH" ]; then
+              APP_PATH=$(find telegram-ios -name "*.app" -type d 2>/dev/null | head -1)
+            fi
+
+            if [ -z "$APP_PATH" ]; then
+              echo "❌ Telegram.app и Telegram.ipa не найдены!"
+              echo "Содержимое bazel-bin:"
+              find telegram-ios/bazel-bin -type d -maxdepth 4 2>/dev/null || true
+              exit 1
+            fi
+
+            echo "  Найден .app: $APP_PATH"
+            mkdir -p Payload
+            cp -r "$APP_PATH" Payload/
+            zip -r -9 Backwoods.ipa Payload/
+            rm -rf Payload/
           fi
-
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find telegram-ios -name "*.app" -type d 2>/dev/null | head -1)
-          fi
-
-          if [ -z "$APP_PATH" ]; then
-            echo "❌ Telegram.app не найден!"
-            echo "Содержимое bazel-bin:"
-            find telegram-ios/bazel-bin -type d -maxdepth 4 2>/dev/null || true
-            exit 1
-          fi
-
-          echo "  Найден: $APP_PATH"
-
-          # Создаём IPA
-          mkdir -p Payload
-          cp -r "$APP_PATH" Payload/
-          zip -r -9 Backwoods.ipa Payload/
-          rm -rf Payload/
 
           # Информация
           IPA_SIZE=$(du -h Backwoods.ipa | cut -f1)
