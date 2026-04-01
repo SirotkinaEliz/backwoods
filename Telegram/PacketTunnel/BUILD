@@ -26,7 +26,7 @@ swift_library(
 # PacketTunnel iOS Extension
 ios_extension(
     name = "PacketTunnelExtension",
-    bundle_id = "com.backwoods.app.PacketTunnel",
+    bundle_id = "ph.telegra.Telegraph.PacketTunnel",
     entitlements = "Entitlements.plist",
     families = ["iphone", "ipad"],
     infoplists = ["Info.plist"],

@@ -9,18 +9,17 @@ with open(path, 'r') as f:
 patched = False
 
 # Patch: inject CI flags into common_args (added after '--verbose_failures')
-# This ensures --//Telegram:disableProvisioningProfiles and --//Telegram:disableExtensions
-# are passed to every bazel invocation made by Make.py
+# This ensures --//Telegram:disableProvisioningProfiles is passed to every bazel invocation.
+# Note: disableExtensions is NOT set so the PacketTunnel VPN extension is included.
 old = "            '--verbose_failures',"
 new = ("            '--verbose_failures',\n"
        "            '--//Telegram:disableProvisioningProfiles',  # Backwoods CI\n"
-       "            '--//Telegram:disableExtensions',            # Backwoods CI\n"
        "            '--action_env=DEVELOPER_DIR',               # Backwoods CI: fix ibtool iOS platform")
 
 if old in content:
     content = content.replace(old, new, 1)
     patched = True
-    print("Make.py patched: disableProvisioningProfiles + disableExtensions added to common_args")
+    print("Make.py patched: disableProvisioningProfiles + action_env added to common_args")
 else:
     print("WARNING: '--verbose_failures' not found in common_args — trying fallback")
     # Fallback: patch invoke_build() to always set disable_provisioning_profiles

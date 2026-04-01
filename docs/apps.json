@@ -1,0 +1,18 @@
+{
+  "name": "GLUSH",
+  "identifier": "com.glush.altstore-source",
+  "apps": [
+    {
+      "name": "GLUSH",
+      "bundleIdentifier": "ph.telegra.Telegraph",
+      "developerName": "GLUSH",
+      "subtitle": "Telegram с WireGuard VPN",
+      "localizedDescription": "Форк Telegram с встроенным WireGuard VPN туннелем. Приватность и обход блокировок прямо в мессенджере. Устанавливается без App Store через AltStore или SideStore.",
+      "iconURL": "https://telegram.org/img/t_logo.png",
+      "tintColor": "2CA5E0",
+      "screenshotURLs": [],
+      "versions": []
+    }
+  ],
+  "news": []
+}

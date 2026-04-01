@@ -574,6 +574,44 @@ cd - > /dev/null
 echo ">>> Шаг 6 завершён"
 
 # ==============================================================================
+# ШАГ 7: Переименование приложения в GLUSH
+# ==============================================================================
+echo ""
+echo ">>> Шаг 7: Переименование в GLUSH..."
+
+# Патч CFBundleDisplayName во всех Info.plist главного таргета
+find "$TELEGRAM_DIR/Telegram" -name "Info.plist" -not -path "*/PacketTunnel/*" | while read PLIST_F; do
+    /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName GLUSH" "$PLIST_F" 2>/dev/null && echo "  Renamed: $PLIST_F" || true
+done
+
+# Патч appstore-configuration.json (поле appName)
+APP_CFG="$TELEGRAM_DIR/build-system/appstore-configuration.json"
+if [ -f "$APP_CFG" ]; then
+    RENAME_PY=$(mktemp)
+    cat > "$RENAME_PY" << 'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    d = json.load(f)
+changed = False
+for k in ['appName', 'bundleDisplayName', 'displayName', 'shortBundleName', 'targetName']:
+    if k in d and isinstance(d[k], str) and 'Telegram' in d[k]:
+        d[k] = 'GLUSH'
+        changed = True
+if changed:
+    with open(path, 'w') as f:
+        json.dump(d, f, indent=2)
+    print('  appstore-configuration.json: appName -> GLUSH')
+else:
+    print('  appstore-configuration.json: поля с именем Telegram не найдены')
+PYEOF
+    python3 "$RENAME_PY" "$APP_CFG"
+    rm "$RENAME_PY"
+fi
+
+echo "  ✅ Переименование в GLUSH завершено"
+
+# ==============================================================================
 # ГОТОВО
 # ==============================================================================
 echo ""

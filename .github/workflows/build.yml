@@ -22,7 +22,7 @@
 #     TUNNEL_PROVISIONING_PROFILE_BASE64 — профиль расширения
 # ==============================================================================
 
-name: "🔨 Build Backwoods IPA"
+name: "🔨 Build GLUSH IPA"
 
 on:
   push:
@@ -59,6 +59,8 @@ jobs:
     name: "🏗 Сборка IPA"
     runs-on: macos-15
     timeout-minutes: 180
+    permissions:
+      contents: write
 
     steps:
       # ================================================================
@@ -379,7 +381,7 @@ jobs:
           echo "  IPA found: $BAZEL_IPA"
           
           if [ -n "$BAZEL_IPA" ]; then
-            cp "$BAZEL_IPA" Backwoods.ipa
+            cp "$BAZEL_IPA" GLUSH.ipa
           else
             echo "❌ Telegram.ipa не найден! Диагностика:"
             echo "  Содержимое telegram-ios/:"
@@ -393,12 +395,12 @@ jobs:
           fi
 
           # Информация
-          IPA_SIZE=$(du -h Backwoods.ipa | cut -f1)
+          IPA_SIZE=$(du -h GLUSH.ipa | cut -f1)
           echo ""
           echo "=============================================="
-          echo "  ✅ Backwoods.ipa собран!"
+          echo "  ✅ GLUSH.ipa собран!"
           echo "  Размер: $IPA_SIZE"
-          echo "  SHA256: $(shasum -a 256 Backwoods.ipa | cut -d' ' -f1)"
+          echo "  SHA256: $(shasum -a 256 GLUSH.ipa | cut -d' ' -f1)"
           echo "=============================================="
 
       # ================================================================
@@ -408,8 +410,8 @@ jobs:
       - name: "📤 Загрузка IPA"
         uses: actions/upload-artifact@v4
         with:
-          name: "Backwoods-${{ github.sha }}"
-          path: Backwoods.ipa
+          name: "GLUSH-${{ github.sha }}"
+          path: GLUSH.ipa
           retention-days: 90
 
       - name: "📤 Загрузка логов сборки"
@@ -421,23 +423,60 @@ jobs:
           retention-days: 7
 
       # ================================================================
-      # РЕЛИЗ (при тегах v*)
+      # РЕЛИЗ — создаётся при каждом пуше в main
       # ================================================================
 
       - name: "🚀 Создание релиза"
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: release
         uses: softprops/action-gh-release@v2
         with:
-          files: Backwoods.ipa
-          generate_release_notes: true
+          tag_name: "build-${{ github.run_number }}"
+          name: "GLUSH build-${{ github.run_number }}"
+          files: GLUSH.ipa
+          generate_release_notes: false
           body: |
-            ## Backwoods ${{ github.ref_name }}
+            ## GLUSH build-${{ github.run_number }}
 
-            📱 **Установка:**
-            - Скачайте `Backwoods.ipa`
-            - Установите через TrollStore или AltStore
+            📱 **Установка на iPhone без App Store (iOS 16–26, бесплатно):**
 
-            ⚠️ **Перед использованием** убедитесь, что VPN конфигурация вшита в сборку.
+            ### Вариант 1 — SideStore (рекомендуется, без компьютера)
+            1. Установите SideStore: https://sidestore.io
+            2. В SideStore → Browse → Sources → добавьте: `https://sirotkinaeliz.github.io/backwoods/apps.json`
+            3. Найдите **GLUSH** → **Install**
+
+            ### Вариант 2 — AltStore (нужен компьютер 1 раз в 7 дней)
+            1. Установите AltStore: https://altstore.io
+            2. В AltStore → Browse → Sources → добавьте: `https://sirotkinaeliz.github.io/backwoods/apps.json`
+            3. Найдите **GLUSH** → **Install**
+
+            ### Вариант 3 — Feather / Sideloadly (прямая установка)
+            1. Скачайте `GLUSH.ipa` ниже
+            2. Установите через [Feather](https://github.com/khcrysalis/Feather) или [Sideloadly](https://sideloadly.io)
+
+            ---
+            💡 **AltStore/SideStore source:** `https://sirotkinaeliz.github.io/backwoods/apps.json`
+            🔗 **Страница установки:** https://sirotkinaeliz.github.io/backwoods/
+
+      - name: "📝 Обновить AltStore/SideStore source"
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          DOWNLOAD_URL="https://github.com/SirotkinaEliz/backwoods/releases/download/build-${{ github.run_number }}/GLUSH.ipa"
+          IPA_SIZE=$(stat -f%z GLUSH.ipa 2>/dev/null || stat -c%s GLUSH.ipa 2>/dev/null || echo "0")
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          VERSION="12.0.${{ github.run_number }}"
+
+          python3 backwoods/scripts/update-altstore.py \
+            "$DOWNLOAD_URL" "$VERSION" "$IPA_SIZE" "$BUILD_DATE" \
+            "backwoods/docs/apps.json"
+
+          cd backwoods
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/SirotkinaEliz/backwoods.git"
+          git add docs/apps.json
+          git commit -m "🤖 AltStore: GLUSH build-${{ github.run_number }}" || true
+          git push || true
 
       # ================================================================
       # ОЧИСТКА
