@@ -39,6 +39,14 @@ def main():
     # Keep only the last 10 versions
     data["apps"][0]["versions"] = data["apps"][0]["versions"][:10]
 
+    # Also update top-level fields (required by Scarlet)
+    data["apps"][0]["version"] = version
+    data["apps"][0]["versionDate"] = build_date
+    data["apps"][0]["versionDescription"] = f"Telegram + WireGuard VPN build {version}"
+    data["apps"][0]["downloadURL"] = download_url
+    data["apps"][0]["size"] = ipa_size
+    data["apps"][0]["minOSVersion"] = "16.0"
+
     with open(apps_json_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
