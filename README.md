@@ -1,104 +1,67 @@
 ﻿# GLUSH
 
-Telegram с встроенным WireGuard VPN. Устанавливается на iPhone без App Store и без компьютера.
+Telegram со встроенным WireGuard VPN. Устанавливается на iPhone без App Store и **без компьютера**.
 
 ---
 
-##  Установка на iPhone (без ПК, бесплатно)
+## Установка на iPhone (iOS 1626, без ПК, бесплатно)
 
-### Что нужно знать заранее
+### Шаг 1  Установи Scarlet
 
-| | SideStore |
-|---|---|
-| **iOS** | 16  26 |
-| **Компьютер** |  Не нужен |
-| **Стоимость** |  Бесплатно |
-| **Переподписка** |  Автоматически каждые 7 дней |
+1. На iPhone открой **Safari** (только Safari, не Chrome)
+2. Перейди на **usescarlet.com**
+3. Нажми кнопку **Install**  появится предложение установить профиль
+4. Нажми **Разрешить**  затем **Установить**
+5. Перейди в **Настройки  Основные  VPN и управление устройством**
+6. Найди сертификат Scarlet  нажми **Доверять**  **Доверять**
+7. Открой приложение **Scarlet**  оно появится на рабочем столе
 
----
+### Шаг 2  Добавь источник GLUSH
 
-## Шаг 1  Установи SideStore
-
-> SideStore  это менеджер приложений, как App Store, но для IPA без Apple.
-
-1. На iPhone открой **Safari** (именно Safari, не Chrome)
-2. Зайди на **[sidestore.io](https://sidestore.io)**
-3. Нажми кнопку **Install**  выбери способ установки
-4. Разреши установку профиля: **Настройки  Основные  VPN и управление устройством  Доверять**
-5. Открой приложение **SideStore**
-6. При первом запуске SideStore попросит создать **пару**  нажми **Generate Pairing File** и следуй инструкции (это нужно один раз)
-
----
-
-## Шаг 2  Добавь Source GLUSH в SideStore
-
-1. В SideStore открой вкладку **Browse** (внизу)
-2. Нажми **Sources**  кнопка **+** в правом верхнем углу
-3. Вставь этот адрес:
-   ```
+1. В Scarlet нажми вкладку **Sources** (или Repo / Добавить источник)
+2. Нажми **+**  вставь адрес:
+   \\\
    https://sirotkinaeliz.github.io/backwoods/apps.json
-   ```
-4. Нажми **Add Source**
+   \\\
+3. Нажми **Add**
+
+### Шаг 3  Установи GLUSH
+
+1. В списке найди **GLUSH**
+2. Нажми **Get** или **Install**
+3. Подожди ~1 минуту
+
+### Шаг 4  Запусти GLUSH
+
+1. Открой GLUSH с рабочего стола
+2. На запрос **Добавить конфигурацию VPN**  нажми **Разрешить**
+3. VPN включится автоматически  готово 
 
 ---
 
-## Шаг 3  Установи GLUSH
+## Важно знать
 
-1. В списке приложений найди **GLUSH**
-2. Нажми **Free**  **Install**
-3. Дождись установки (~1 минута)
+Scarlet (бесплатный) использует общие сертификаты. Apple иногда отзывает их  примерно раз в 13 месяца.
+**Если приложение перестало открываться:**
+1. Зайди снова на **usescarlet.com**  переустанови Scarlet
+2. Открой Scarlet  найди GLUSH  нажми **Reinstall**
 
----
-
-## Шаг 4  Запусти GLUSH
-
-1. Открой **GLUSH** с главного экрана
-2. При первом запуске появится запрос: **"GLUSH хочет добавить конфигурацию VPN"**  нажми **Разрешить**
-3. VPN включится автоматически  в статусной строке появится иконка **VPN**
-4. Готово   Telegram работает через зашифрованный туннель
+Это занимает 2 минуты, компьютер не нужен.
 
 ---
 
-## Автообновление
+## Ссылки
 
-SideStore переподписывает GLUSH **автоматически каждые 7 дней** в фоне  ничего делать не нужно.
-
-Когда выходит новая сборка GLUSH  в SideStore появится кнопка **Update**.
-
----
-
-## Прямая ссылка на IPA
-
- **[Скачать GLUSH.ipa (последняя версия)](https://github.com/SirotkinaEliz/backwoods/releases/latest)**
-
----
-
-## Частые вопросы
-
-**Не появляется запрос VPN при первом запуске?**
-Зайди в Настройки  Основные  VPN и управление устройством  GLUSH  Доверять  открой приложение заново.
-
-**SideStore говорит "App expired"?**
-Открой SideStore  нажми **Refresh All**  переподпишет.
-
-**iOS 26  SideStore не работает?**
-SideStore обновляется под новые iOS в течение 12 недель после релиза. Следи за обновлениями на [sidestore.io](https://sidestore.io).
-
-**Можно без SideStore, прямо скачать IPA?**
-Да, но для установки нужен будет Sideloadly на компьютере. Без компьютера  только через SideStore.
-
----
-
-## Страница установки
-
- **[sirotkinaeliz.github.io/backwoods](https://sirotkinaeliz.github.io/backwoods)**
+- **Скачать IPA напрямую:** https://github.com/SirotkinaEliz/backwoods/releases/latest
+- **Страница установки:** https://sirotkinaeliz.github.io/backwoods/
+- **Source для Scarlet/AltStore:** https://sirotkinaeliz.github.io/backwoods/apps.json
 
 ---
 
 ## Техническое
 
-- Форк [Telegram-iOS](https://github.com/TelegramMessenger/Telegram-iOS) `release-12.0`
-- WireGuard через `wireguard-go` + `wireguard-apple`
+- Форк Telegram-iOS release-12.0
+- WireGuard через wireguard-go + wireguard-apple
 - Сборка: GitHub Actions, Xcode 16.4, Bazel, iOS 18.5 SDK
-- Bundle ID: `ph.telegra.Telegraph`
+- Bundle ID: ph.telegra.Telegraph
 - Лицензия: GPLv2

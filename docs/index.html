@@ -93,97 +93,75 @@
     <span class="badge">iOS 16 – 26 · Бесплатно · Без App Store</span>
   </div>
 
-  <div class="source-box">
-    <div class="icon">📦</div>
-    <div style="flex:1">
-      <div style="font-weight:600;margin-bottom:4px">AltStore / SideStore Source</div>
-      <code id="src-url">https://sirotkinaeliz.github.io/backwoods/apps.json</code>
-      <button class="copy-btn" onclick="copySource()">Скопировать адрес</button>
+  <!-- MAIN HERO: Scarlet -->
+  <div style="background:#0a1628;border:2px solid #e05c2c;border-radius:18px;padding:24px;margin:24px 0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="background:#e05c2c;color:#fff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕЗ КОМПЬЮТЕРА</span>
+      <span style="background:#1a3a1a;color:#4caf50;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕСПЛАТНО</span>
+      <span style="background:#1a1a3a;color:#9c88ff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">iOS 16–26</span>
+    </div>
+    <h2 style="font-size:1.4rem;margin-bottom:4px">🔴 Установка через Scarlet</h2>
+    <p style="color:#888;font-size:0.85rem;margin-bottom:20px">Полностью без компьютера. Устанавливается прямо на iPhone через Safari.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+        <div style="background:#e05c2c;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">1</div>
+        <div>
+          <div style="font-weight:600;margin-bottom:4px">Установи Scarlet</div>
+          <div style="color:#999;font-size:0.85rem">Открой в <strong style="color:#fff">Safari</strong> → <a href="https://usescarlet.com" target="_blank" style="color:#e05c2c">usescarlet.com</a> → нажми <strong style="color:#fff">Install</strong> → разреши установку профиля</div>
+          <div style="color:#999;font-size:0.85rem;margin-top:6px">Затем: <strong style="color:#fff">Настройки → Основные → VPN и управление устройством → сертификат Scarlet → Доверять</strong></div>
+        </div>
+      </div>
+
+      <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+        <div style="background:#e05c2c;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">2</div>
+        <div>
+          <div style="font-weight:600;margin-bottom:6px">Добавь источник GLUSH в Scarlet</div>
+          <div style="color:#999;font-size:0.85rem;margin-bottom:8px">В Scarlet → <strong style="color:#fff">Sources</strong> → кнопка <strong style="color:#fff">+</strong> → вставь:</div>
+          <code id="src-url" style="background:#0d0d1f;padding:8px 12px;border-radius:8px;font-size:0.78rem;color:#e05c2c;display:block;word-break:break-all">https://sirotkinaeliz.github.io/backwoods/apps.json</code>
+          <button class="copy-btn" onclick="copySource()" style="margin-top:8px;background:#e05c2c">Скопировать</button>
+        </div>
+      </div>
+
+      <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+        <div style="background:#e05c2c;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">3</div>
+        <div>
+          <div style="font-weight:600;margin-bottom:4px">Установи GLUSH</div>
+          <div style="color:#999;font-size:0.85rem">В списке найди <strong style="color:#fff">GLUSH</strong> → нажми <strong style="color:#fff">Get</strong> → жди ~1 минуту</div>
+        </div>
+      </div>
+
+      <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+        <div style="background:#4caf50;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">✓</div>
+        <div>
+          <div style="font-weight:600;margin-bottom:4px">Запусти GLUSH</div>
+          <div style="color:#999;font-size:0.85rem">При первом запуске нажми <strong style="color:#fff">Разрешить</strong> на запрос VPN — готово 🔒</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <a class="releases-btn" href="https://github.com/SirotkinaEliz/backwoods/releases/latest">
-    ⬇️ Скачать последнюю версию GLUSH.ipa
+  <!-- Revocation warning -->
+  <div style="background:#1a1200;border:1px solid #5a4000;border-radius:12px;padding:16px;margin-bottom:20px;font-size:0.85rem;color:#ccc">
+    <strong style="color:#f0c040">⚠️ Про отзыв сертификата:</strong> Scarlet (бесплатный) иногда перестаёт работать, когда Apple отзывает общий сертификат (~раз в 1–3 месяца).
+    Если GLUSH перестал открываться — зайди на <a href="https://usescarlet.com" style="color:#e05c2c">usescarlet.com</a> в Safari, переустанови Scarlet, затем в Scarlet нажми <strong style="color:#fff">Reinstall</strong> рядом с GLUSH. Занимает 2 минуты.
+  </div>
+
+  <!-- Direct IPA download -->
+  <a class="releases-btn" href="https://github.com/SirotkinaEliz/backwoods/releases/latest" style="background:linear-gradient(135deg,#e05c2c,#7B5EA7)">
+    ⬇️ Скачать GLUSH.ipa напрямую
   </a>
 
-  <!-- BIG STEP-BY-STEP -->
-  <div style="margin:30px 0">
-
-    <div style="background:#0a1628;border:2px solid #2CA5E0;border-radius:18px;padding:24px;margin-bottom:20px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <span style="background:#2CA5E0;color:#fff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕЗ КОМПЬЮТЕРА</span>
-        <span style="background:#1a3a1a;color:#4caf50;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕСПЛАТНО</span>
-        <span style="background:#1a1a3a;color:#9c88ff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">iOS 16–26</span>
-      </div>
-      <h2 style="font-size:1.3rem;margin-bottom:4px">Установка через SideStore</h2>
-      <p style="color:#888;font-size:0.85rem;margin-bottom:20px">Переподписка происходит автоматически каждые 7 дней — делать ничего не нужно</p>
-
-      <div style="display:flex;flex-direction:column;gap:14px">
-
-        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
-          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">1</div>
-          <div>
-            <div style="font-weight:600;margin-bottom:4px">Установи SideStore</div>
-            <div style="color:#999;font-size:0.85rem">Открой в <strong style="color:#fff">Safari</strong> → <a href="https://sidestore.io" target="_blank" style="color:#2CA5E0">sidestore.io</a> → нажми <strong style="color:#fff">Install</strong></div>
-            <div style="color:#999;font-size:0.85rem;margin-top:4px">После установки: <strong style="color:#fff">Настройки → Основные → VPN и управление устройством → Доверять</strong></div>
-          </div>
-        </div>
-
-        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
-          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">2</div>
-          <div>
-            <div style="font-weight:600;margin-bottom:4px">Создай Pairing File (один раз)</div>
-            <div style="color:#999;font-size:0.85rem">Открой SideStore → при первом запуске нажми <strong style="color:#fff">Generate Pairing File</strong> и следуй инструкции на экране</div>
-          </div>
-        </div>
-
-        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
-          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">3</div>
-          <div>
-            <div style="font-weight:600;margin-bottom:6px">Добавь Source GLUSH</div>
-            <div style="color:#999;font-size:0.85rem;margin-bottom:8px">В SideStore → <strong style="color:#fff">Browse</strong> → <strong style="color:#fff">Sources</strong> → кнопка <strong style="color:#fff">+</strong> → вставь адрес:</div>
-            <code id="src-url" style="background:#0d0d1f;padding:8px 12px;border-radius:8px;font-size:0.78rem;color:#2CA5E0;display:block;word-break:break-all">https://sirotkinaeliz.github.io/backwoods/apps.json</code>
-            <button class="copy-btn" onclick="copySource()" style="margin-top:8px">Скопировать</button>
-          </div>
-        </div>
-
-        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
-          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">4</div>
-          <div>
-            <div style="font-weight:600;margin-bottom:4px">Установи GLUSH</div>
-            <div style="color:#999;font-size:0.85rem">В списке найди <strong style="color:#fff">GLUSH</strong> → нажми <strong style="color:#fff">Free</strong> → <strong style="color:#fff">Install</strong> → жди ~1 минуту</div>
-          </div>
-        </div>
-
-        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
-          <div style="background:#4caf50;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">✓</div>
-          <div>
-            <div style="font-weight:600;margin-bottom:4px">Запусти GLUSH</div>
-            <div style="color:#999;font-size:0.85rem">При первом запуске нажми <strong style="color:#fff">Разрешить</strong> на запрос VPN — готово, Telegram работает через зашифрованный туннель 🔒</div>
-          </div>
-        </div>
-
-      </div>
+  <!-- FAQ -->
+  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:20px;margin:20px 0">
+    <h3 style="margin-bottom:14px;font-size:1rem">Частые вопросы</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:0.85rem;color:#bbb">
+      <div><strong style="color:#fff">Scarlet не открывается / App expired?</strong><br>Зайди на usescarlet.com → переустанови Scarlet → Reinstall GLUSH</div>
+      <div><strong style="color:#fff">Не появляется запрос VPN?</strong><br>Настройки → Основные → VPN и управление устройством → GLUSH → Доверять → открой заново</div>
+      <div><strong style="color:#fff">Нужна другая версия iOS?</strong><br>Scarlet работает на iOS 16–26. Более старые версии — TrollStore (до iOS 17.0)</div>
     </div>
-
-    <!-- FAQ -->
-    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:20px;margin-bottom:16px">
-      <h3 style="margin-bottom:14px;font-size:1rem">Частые вопросы</h3>
-      <div style="display:flex;flex-direction:column;gap:12px;font-size:0.85rem;color:#bbb">
-        <div><strong style="color:#fff">SideStore говорит "App expired"?</strong><br>Открой SideStore → нажми <strong style="color:#fff">Refresh All</strong></div>
-        <div><strong style="color:#fff">Не появляется запрос VPN?</strong><br>Настройки → Основные → VPN и управление устройством → GLUSH → Доверять → открой заново</div>
-        <div><strong style="color:#fff">iOS 26 — SideStore не работает?</strong><br>SideStore обновляется под новые iOS за 1–2 недели. Следи на <a href="https://sidestore.io" style="color:#2CA5E0">sidestore.io</a></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="note">
-    <strong>⚠️ Важно:</strong> Для работы WireGuard VPN приложение запросит разрешение на создание VPN-туннеля. Разрешите его при первом запуске.
-  </div>
-
-  <div class="note">
-    <strong>💡 Переподписка:</strong> С бесплатным Apple ID приложение работает 7 дней. SideStore переподписывает автоматически. Для остальных — повторите установку через 7 дней.
   </div>
 
   <footer>
