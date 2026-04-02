@@ -42,7 +42,7 @@ android {
 
 dependencies {
     // WireGuard Android tunnel library (official, from WireGuard project)
-    implementation 'com.wireguard.android:tunnel:1.0.20230724'
+    implementation 'com.wireguard.android:tunnel:1.0.20230706'
 
     // Android core
     implementation 'androidx.core:core-ktx:1.12.0'
