@@ -40,10 +40,10 @@
           "date": ""
         },
         "windows": {
-          "downloadURL": "",
-          "size": 0,
+          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/windows-build-11/GLUSH-VPN-windows-amd64.exe",
+          "size": 3256832,
           "minOSVersion": "10",
-          "date": ""
+          "date": "2026-04-02T12:32:47Z"
         },
         "macos": {
           "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/macos-build-10/GLUSH-VPN-macos-universal.zip",
