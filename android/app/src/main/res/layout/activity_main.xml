@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0f0f1a">
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#0f0f1a"
+    android:paddingTop="80dp"
+    android:paddingBottom="32dp"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp">
 
     <!-- App title -->
     <TextView
@@ -15,13 +20,7 @@
         android:textSize="52sp"
         android:textColor="#2CA5E0"
         android:textStyle="bold"
-        android:letterSpacing="0.15"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/appSubtitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVerticalChainStyle="packed"
-        app:layout_constraintVerticalBias="0.35"/>
+        android:letterSpacing="0.15"/>
 
     <TextView
         android:id="@+id/appSubtitle"
@@ -30,11 +29,7 @@
         android:text="WireGuard VPN"
         android:textSize="14sp"
         android:textColor="#888888"
-        android:layout_marginTop="4dp"
-        app:layout_constraintTop_toBottomOf="@+id/appTitle"
-        app:layout_constraintBottom_toTopOf="@+id/statusIndicator"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginTop="4dp"/>
 
     <!-- Status indicator circle -->
     <TextView
@@ -44,11 +39,7 @@
         android:text="⬤"
         android:textSize="64sp"
         android:textColor="#888888"
-        android:layout_marginTop="48dp"
-        app:layout_constraintTop_toBottomOf="@+id/appSubtitle"
-        app:layout_constraintBottom_toTopOf="@+id/statusText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginTop="48dp"/>
 
     <TextView
         android:id="@+id/statusText"
@@ -57,11 +48,7 @@
         android:text="VPN отключён"
         android:textSize="18sp"
         android:textColor="#CCCCCC"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/statusIndicator"
-        app:layout_constraintBottom_toTopOf="@+id/serverInfo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginTop="12dp"/>
 
     <TextView
         android:id="@+id/serverInfo"
@@ -71,27 +58,24 @@
         android:textSize="12sp"
         android:textColor="#666666"
         android:layout_marginTop="6dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/statusText"
-        app:layout_constraintBottom_toTopOf="@+id/btnToggleVpn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:visibility="gone"/>
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
     <!-- Connect/Disconnect button -->
     <Button
         android:id="@+id/btnToggleVpn"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:text="Подключить VPN"
         android:textSize="16sp"
         android:textColor="#FFFFFF"
         android:backgroundTint="#2CA5E0"
-        android:layout_marginTop="40dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/serverInfo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginBottom="16dp"/>
 
     <!-- Version info -->
     <TextView
@@ -100,10 +84,6 @@
         android:layout_height="wrap_content"
         android:text="v1.0 · Android"
         android:textSize="11sp"
-        android:textColor="#444444"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:textColor="#444444"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
