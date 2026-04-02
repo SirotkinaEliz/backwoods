@@ -47,8 +47,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     // WireGuard Android tunnel library (official, from WireGuard project)
-    // Using 1.0.20230321 - avoids Java records desugaring issue in D8
-    implementation 'com.wireguard.android:tunnel:1.0.20230321'
+    implementation 'com.wireguard.android:tunnel:1.0.20230706'
 
     // Android core
     implementation 'androidx.core:core-ktx:1.12.0'

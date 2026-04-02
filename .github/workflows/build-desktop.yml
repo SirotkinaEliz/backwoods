@@ -112,6 +112,9 @@ jobs:
 
       - name: Update apps.json with Windows link
         shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
         run: |
           python scripts/update-altstore.py `
             --windows-url "$Env:WINDOWS_URL" `

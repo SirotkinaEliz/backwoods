@@ -45,7 +45,7 @@ class GlushVpnService : VpnService() {
             val confText = resources.openRawResource(R.raw.tunnel)
                 .bufferedReader().readText()
 
-            val config = Config.parse(confText.reader())
+            val config = Config.parse(confText.byteInputStream())
 
             val be = GoBackend(this@GlushVpnService)
 

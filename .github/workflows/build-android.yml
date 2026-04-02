@@ -53,7 +53,9 @@ jobs:
           # Install Gradle wrapper
           gradle wrapper --gradle-version 8.4 --distribution-type bin
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          # assembleRelease uses R8 which properly handles Java records desugaring
+          # signingConfig signingConfigs.debug auto-creates debug.keystore in CI
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       # ── 6. Rename APK ────────────────────────────────────────────────────────
       - name: Rename APK
