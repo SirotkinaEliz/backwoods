@@ -28,14 +28,23 @@ import ast
 
 
 def _load_data(raw: str) -> dict:
-    """Parse raw text as JSON or Python dict literal."""
+    """Parse raw text as JSON, YAML, or Python dict literal."""
     # Try standard JSON first
     try:
         return json.loads(raw)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, ValueError):
         pass
 
-    # Fallback: Python ast.literal_eval (handles single quotes, trailing commas, etc.)
+    # Try YAML (covers Python-style, standard YAML, and single-quoted JSON-like formats)
+    try:
+        import yaml  # PyYAML — installed in CI via `pip install pyyaml`
+        result = yaml.safe_load(raw)
+        if isinstance(result, dict):
+            return result
+    except Exception:
+        pass
+
+    # Fallback: Python ast.literal_eval (handles single-quote Python dicts)
     try:
         result = ast.literal_eval(raw)
         if isinstance(result, dict):
@@ -44,7 +53,7 @@ def _load_data(raw: str) -> dict:
         pass
 
     raise ValueError(
-        "Could not parse input as JSON or Python dict. "
+        "Could not parse input as JSON, YAML, or Python dict. "
         f"First 80 chars: {repr(raw[:80])}"
     )
 

@@ -28,10 +28,12 @@ jobs:
           cache-dependency-path: desktop/go.mod
 
       - name: Inject tunnel.conf
+        continue-on-error: true
         shell: pwsh
         env:
           TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
         run: |
+          pip install pyyaml --quiet
           $Env:TUNNEL_CONFIG_JSON | Out-File -Encoding utf8 "$Env:TEMP\tunnel_input.json"
           python scripts/json2wgconf.py `
             "$Env:TEMP\tunnel_input.json" `
@@ -150,9 +152,11 @@ jobs:
           cache-dependency-path: desktop/go.mod
 
       - name: Inject tunnel.conf
+        continue-on-error: true
         env:
           TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
         run: |
+          pip3 install pyyaml --quiet
           echo "$TUNNEL_CONFIG_JSON" > /tmp/tunnel_input.json
           python3 scripts/json2wgconf.py \
             /tmp/tunnel_input.json \
