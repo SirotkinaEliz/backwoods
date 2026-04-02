@@ -53,10 +53,9 @@ func main() {
 	// This is a no-op on other platforms (build-tag guarded).
 	extractWintun()
 
-	if !isAdmin() {
-		showElevationError()
-		os.Exit(1)
-	}
+	// Если нет прав — на Windows автоматически запросит UAC, на Unix завершится с ошибкой.
+	ensureAdmin()
+
 
 	logFile, err := os.OpenFile(logPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err == nil {
@@ -245,11 +244,7 @@ func setStatusLocked(label string, isConnected bool) {
 	}
 }
 
-func showElevationError() {
-	fmt.Fprintln(os.Stderr,
-		"GLUSH VPN требует прав администратора.\n"+
-			"Запустите приложение от имени администратора (Windows) или через sudo (macOS).")
-}
+
 
 func logPath() string {
 	if runtime.GOOS == "windows" {
