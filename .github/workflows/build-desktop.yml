@@ -1,0 +1,268 @@
+name: "🖥️ Build GLUSH Desktop (Windows + macOS)"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Windows EXE
+  # ═══════════════════════════════════════════════════════════════════════════
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: desktop/go.mod
+
+      - name: Inject tunnel.conf
+        shell: pwsh
+        env:
+          TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
+        run: |
+          $Env:TUNNEL_CONFIG_JSON | Out-File -Encoding utf8 "$Env:TEMP\tunnel_input.json"
+          python scripts/json2wgconf.py `
+            "$Env:TEMP\tunnel_input.json" `
+            "desktop\cmd\glush-vpn\tunnel.conf"
+          Write-Host "tunnel.conf written"
+
+      - name: Generate tray icons
+        shell: pwsh
+        run: |
+          python scripts/make_icons.py "desktop\cmd\glush-vpn\assets"
+
+      - name: Download wintun.dll
+        shell: pwsh
+        run: |
+          # wintun.dll is required by wireguard-go on Windows (MIT license)
+          $url = "https://www.wintun.net/builds/wintun-0.14.1.zip"
+          Invoke-WebRequest -Uri $url -OutFile "$Env:TEMP\wintun.zip"
+          Expand-Archive "$Env:TEMP\wintun.zip" -DestinationPath "$Env:TEMP\wintun"
+          Copy-Item "$Env:TEMP\wintun\wintun\bin\amd64\wintun.dll" "desktop\cmd\glush-vpn\"
+
+      - name: Build Windows EXE
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          $Env:GOOS = "windows"
+          $Env:GOARCH = "amd64"
+          $Env:CGO_ENABLED = "0"
+          go mod download
+          go build `
+            -ldflags="-H windowsgui -s -w -X main.buildVersion=build-${{ github.run_number }}" `
+            -o "..\GLUSH-VPN-windows-amd64.exe" `
+            .\cmd\glush-vpn\
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GLUSH-windows-${{ github.sha }}
+          path: GLUSH-VPN-windows-amd64.exe
+          retention-days: 30
+
+      - name: Create Windows Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-build-${{ github.run_number }}
+          name: "GLUSH VPN Windows build-${{ github.run_number }}"
+          body: |
+            ## GLUSH VPN — Windows
+
+            **Версия:** build-${{ github.run_number }}
+            **Требования:** Windows 10 / 11 (64-bit)
+
+            ### Установка
+            1. Скачайте `GLUSH-VPN-windows-amd64.exe`
+            2. Запустите **от имени администратора** (правая кнопка → "Запустить от администратора")
+            3. Значок GLUSH появится в трее (нижний правый угол)
+            4. VPN подключается автоматически при запуске
+
+            > 💡 Добавьте в автозагрузку: Win+R → `shell:startup` → положите ярлык
+
+            > ⚠️ Требуются права администратора для создания VPN-туннеля
+          files: GLUSH-VPN-windows-amd64.exe
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Save artifact path for apps.json update
+      - name: Save Windows artifact info
+        shell: pwsh
+        run: |
+          $size = (Get-Item "GLUSH-VPN-windows-amd64.exe").Length
+          echo "WINDOWS_SIZE=$size" >> $Env:GITHUB_ENV
+          echo "WINDOWS_URL=https://github.com/${{ github.repository }}/releases/download/windows-build-${{ github.run_number }}/GLUSH-VPN-windows-amd64.exe" >> $Env:GITHUB_ENV
+
+      - name: Update apps.json with Windows link
+        shell: pwsh
+        run: |
+          python scripts/update-altstore.py `
+            --windows-url "$Env:WINDOWS_URL" `
+            --windows-size "$Env:WINDOWS_SIZE" `
+            docs/apps.json
+
+      - name: Commit updated apps.json
+        shell: pwsh
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/apps.json
+          git diff --staged --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "ci(windows): update apps.json with build-${{ github.run_number }} EXE link"
+            git pull --rebase origin main
+            git push origin main
+          }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # macOS APP
+  # ═══════════════════════════════════════════════════════════════════════════
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: desktop/go.mod
+
+      - name: Inject tunnel.conf
+        env:
+          TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
+        run: |
+          echo "$TUNNEL_CONFIG_JSON" > /tmp/tunnel_input.json
+          python3 scripts/json2wgconf.py \
+            /tmp/tunnel_input.json \
+            desktop/cmd/glush-vpn/tunnel.conf
+
+      - name: Generate tray icons
+        run: python3 scripts/make_icons.py desktop/cmd/glush-vpn/assets
+
+      - name: Build macOS binary (Intel + Apple Silicon)
+        working-directory: desktop
+        run: |
+          go mod download
+
+          # Build for Intel (amd64)
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 \
+            go build \
+              -ldflags="-s -w -X main.buildVersion=build-${{ github.run_number }}" \
+              -o ../GLUSH-VPN-darwin-amd64 \
+              ./cmd/glush-vpn/
+
+          # Build for Apple Silicon (arm64)
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 \
+            go build \
+              -ldflags="-s -w -X main.buildVersion=build-${{ github.run_number }}" \
+              -o ../GLUSH-VPN-darwin-arm64 \
+              ./cmd/glush-vpn/
+
+          # Create Universal binary
+          lipo -create -output ../GLUSH-VPN-darwin-universal \
+            ../GLUSH-VPN-darwin-amd64 \
+            ../GLUSH-VPN-darwin-arm64
+
+      - name: Create macOS .app bundle
+        run: |
+          APP="GLUSH-VPN.app"
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
+
+          cp GLUSH-VPN-darwin-universal "$APP/Contents/MacOS/GLUSH-VPN"
+          chmod +x "$APP/Contents/MacOS/GLUSH-VPN"
+
+          cat > "$APP/Contents/Info.plist" << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>  <string>GLUSH-VPN</string>
+            <key>CFBundleIdentifier</key>  <string>com.glush.vpn.macos</string>
+            <key>CFBundleName</key>        <string>GLUSH VPN</string>
+            <key>CFBundleVersion</key>     <string>${{ github.run_number }}</string>
+            <key>CFBundleShortVersionString</key> <string>1.0.${{ github.run_number }}</string>
+            <key>CFBundleIconFile</key>    <string>AppIcon</string>
+            <key>LSUIElement</key>         <true/>
+            <key>NSHighResolutionCapable</key> <true/>
+            <key>LSMinimumSystemVersion</key>  <string>10.13</string>
+          </dict>
+          </plist>
+          EOF
+
+          # Pack into zip for distribution (no code signing)
+          zip -r GLUSH-VPN-macos-universal.zip "$APP"
+          ls -lh GLUSH-VPN-macos-universal.zip
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GLUSH-macos-${{ github.sha }}
+          path: GLUSH-VPN-macos-universal.zip
+          retention-days: 30
+
+      - name: Create macOS Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: macos-build-${{ github.run_number }}
+          name: "GLUSH VPN macOS build-${{ github.run_number }}"
+          body: |
+            ## GLUSH VPN — macOS
+
+            **Версия:** build-${{ github.run_number }}
+            **Требования:** macOS 10.13 High Sierra и новее
+            **Архитектуры:** Intel + Apple Silicon (Universal Binary)
+
+            ### Установка
+            1. Скачайте `GLUSH-VPN-macos-universal.zip`
+            2. Разархивируйте → перетащите `GLUSH-VPN.app` в папку `/Applications`
+            3. Откройте через правую кнопку → "Открыть" (обход Gatekeeper)
+            4. Разрешите VPN в системных настройках
+            5. Значок GLUSH появится в строке меню (⬆ вверху)
+
+            > ⚠️ При первом запуске может потребоваться: Системные настройки → Безопасность → "Всё равно открыть"
+          files: GLUSH-VPN-macos-universal.zip
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update apps.json with macOS link
+        run: |
+          MACOS_SIZE=$(stat -f%z GLUSH-VPN-macos-universal.zip)
+          MACOS_URL="https://github.com/${{ github.repository }}/releases/download/macos-build-${{ github.run_number }}/GLUSH-VPN-macos-universal.zip"
+          python3 scripts/update-altstore.py \
+            --macos-url "$MACOS_URL" \
+            --macos-size "$MACOS_SIZE" \
+            docs/apps.json
+
+      - name: Commit updated apps.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/apps.json
+          git diff --staged --quiet || \
+            git commit -m "ci(macos): update apps.json with build-${{ github.run_number }} APP link"
+          git pull --rebase origin main
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

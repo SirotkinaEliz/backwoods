@@ -25,7 +25,33 @@
       "versionDescription": "Telegram + WireGuard VPN",
       "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/build-47/GLUSH.ipa",
       "size": 66698608,
-      "minOSVersion": "16.0"
+      "minOSVersion": "16.0",
+      "platforms": {
+        "ios": {
+          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/build-47/GLUSH.ipa",
+          "size": 66698608,
+          "minOSVersion": "16.0",
+          "date": "2026-04-01T21:12:38Z"
+        },
+        "android": {
+          "downloadURL": "",
+          "size": 0,
+          "minOSVersion": "5.0",
+          "date": ""
+        },
+        "windows": {
+          "downloadURL": "",
+          "size": 0,
+          "minOSVersion": "10",
+          "date": ""
+        },
+        "macos": {
+          "downloadURL": "",
+          "size": 0,
+          "minOSVersion": "10.13",
+          "date": ""
+        }
+      }
     }
   ],
   "news": []

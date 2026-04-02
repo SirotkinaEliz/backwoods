@@ -3,7 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GLUSH — установка на iPhone</title>
+  <title>GLUSH VPN — скачать для всех платформ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+    .logo { text-align: center; margin-bottom: 40px; }
+    .logo h1 { font-size: 3rem; font-weight: 800; letter-spacing: -1px;
+      background: linear-gradient(135deg, #2CA5E0, #7B5EA7);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo p { color: #888; margin-top: 8px; font-size: 1rem; }
+    .badge {
+      display: inline-block; background: #1a1a2e; border: 1px solid #2CA5E0;
+      color: #2CA5E0; padding: 4px 12px; border-radius: 20px;
+      font-size: 0.75rem; margin-top: 10px;
+    }
+
+    /* ── Platform grid ─────────────────────────────────────────────── */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 30px 0;
+    }
+    @media (max-width: 500px) { .platforms { grid-template-columns: 1fr; } }
+
+    .platform-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 18px;
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color .2s;
+    }
+    .platform-card:hover { border-color: #2CA5E0; }
+    .platform-card.ios   { border-color: #e05c2c; }
+    .platform-card .icon { font-size: 2.2rem; }
+    .platform-card h3    { font-size: 1.1rem; font-weight: 700; }
+    .platform-card .req  { font-size: 0.78rem; color: #666; }
+    .platform-card .dl-btn {
+      display: block; text-align: center; padding: 10px 16px;
+      border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+      text-decoration: none; margin-top: auto; cursor: pointer;
+      border: none; width: 100%;
+    }
+    .dl-btn.ios-btn  { background: #e05c2c; color: #fff; }
+    .dl-btn.and-btn  { background: #3ddc84; color: #000; }
+    .dl-btn.win-btn  { background: #0078d4; color: #fff; }
+    .dl-btn.mac-btn  { background: #555; color: #fff; }
+    .dl-btn:hover    { opacity: .88; }
+    .dl-btn.disabled { background: #2a2a3a; color: #555; cursor: default; }
+
+    /* ── Scarlet section ───────────────────────────────────────────── */
+    .scarlet-box {
+      background:#0a1628; border:2px solid #e05c2c;
+      border-radius:18px; padding:24px; margin:16px 0;
+    }
+    .steps li { font-size:.88rem; color:#ccc; padding:5px 0 5px 28px; position:relative; }
+    code#src-url {
+      background:#0d0d1f; padding:8px 12px; border-radius:8px;
+      font-size:0.78rem; color:#e05c2c; display:block;
+      word-break:break-all; margin:6px 0;
+    }
+    .copy-btn {
+      background:#e05c2c; color:white; border:none; padding:8px 16px;
+      border-radius:8px; cursor:pointer; font-size:.85rem;
+    }
+
+    .note {
+      background:#1a1200; border:1px solid #5a4000;
+      border-radius:12px; padding:16px; font-size:.85rem;
+      color:#ccc; margin:20px 0;
+    }
+    .note strong { color:#f0c040; }
+
+    .releases-btn {
+      display:block; text-align:center;
+      background:linear-gradient(135deg,#2CA5E0,#7B5EA7);
+      color:white; padding:16px; border-radius:14px;
+      text-decoration:none; font-weight:700; font-size:1rem; margin:20px 0;
+    }
+    .releases-btn:hover { opacity:.9; }
+
+    footer { text-align:center; color:#444; font-size:.8rem; margin-top:50px; }
+    footer a { color:#444; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="logo">
+    <h1>GLUSH</h1>
+    <p>Telegram с встроенным WireGuard VPN</p>
+    <span class="badge">iOS · Android · Windows · macOS · Бесплатно</span>
+  </div>
+
+  <!-- ── Платформы ─────────────────────────────────────────────────── -->
+  <div class="platforms">
+
+    <!-- iOS -->
+    <div class="platform-card ios">
+      <div class="icon">📱</div>
+      <h3>iPhone / iPad</h3>
+      <div class="req">iOS 16 – 26 · без компьютера</div>
+      <p style="font-size:.82rem;color:#aaa">Telegram fork с VPN. Устанавливается через <strong>Scarlet</strong> прямо в Safari.</p>
+      <a class="dl-btn ios-btn" href="#ios-guide">Инструкция ↓</a>
+    </div>
+
+    <!-- Android -->
+    <div class="platform-card">
+      <div class="icon">🤖</div>
+      <h3>Android</h3>
+      <div class="req">Android 5.0+ · APK</div>
+      <p style="font-size:.82rem;color:#aaa">WireGuard VPN-клиент. Скачай APK и разреши установку из неизвестных источников.</p>
+      <a id="android-btn" class="dl-btn and-btn disabled"
+         href="https://github.com/SirotkinaEliz/backwoods/releases/latest"
+         target="_blank">⬇ Скачать APK</a>
+    </div>
+
+    <!-- Windows -->
+    <div class="platform-card">
+      <div class="icon">🪟</div>
+      <h3>Windows</h3>
+      <div class="req">Windows 10 / 11 · 64-bit</div>
+      <p style="font-size:.82rem;color:#aaa">Трей-приложение. Запусти от имени администратора — VPN включается автоматически.</p>
+      <a id="windows-btn" class="dl-btn win-btn disabled"
+         href="https://github.com/SirotkinaEliz/backwoods/releases/latest"
+         target="_blank">⬇ Скачать EXE</a>
+    </div>
+
+    <!-- macOS -->
+    <div class="platform-card">
+      <div class="icon">🍎</div>
+      <h3>macOS</h3>
+      <div class="req">macOS 10.13+ · Intel + Apple Silicon</div>
+      <p style="font-size:.82rem;color:#aaa">Universal binary. Значок в строке меню. Запуск через правую кнопку → «Открыть».</p>
+      <a id="macos-btn" class="dl-btn mac-btn disabled"
+         href="https://github.com/SirotkinaEliz/backwoods/releases/latest"
+         target="_blank">⬇ Скачать APP</a>
+    </div>
+
+  </div>
+
+  <div style="font-size:.8rem;color:#555;text-align:center;margin-top:-10px;margin-bottom:24px">
+    ⏳ Android, Windows и macOS появятся после завершения первой сборки в CI (~30 мин).
+       Пока доступны — кнопки ведут на страницу релизов.
+  </div>
+
+  <!-- ── iOS: инструкция Scarlet ──────────────────────────────────── -->
+  <div class="scarlet-box" id="ios-guide">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <span style="background:#e05c2c;color:#fff;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕЗ КОМПЬЮТЕРА</span>
+      <span style="background:#1a3a1a;color:#4caf50;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕСПЛАТНО</span>
+      <span style="background:#1a1a3a;color:#9c88ff;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px">iOS 16–26</span>
+    </div>
+    <h2 style="font-size:1.3rem;margin-bottom:16px">🔴 Установка на iPhone через Scarlet</h2>
+
+    <ol class="steps" style="list-style:none;display:flex;flex-direction:column;gap:12px">
+      <li style="background:#111827;border-radius:12px;padding:14px 14px 14px 40px;position:relative">
+        <span style="position:absolute;left:10px;top:14px;background:#e05c2c;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800">1</span>
+        <strong>Установи Scarlet</strong><br>
+        <span style="color:#999;font-size:.85rem">Открой в <strong style="color:#fff">Safari</strong> → <a href="https://usescarlet.com" target="_blank" style="color:#e05c2c">usescarlet.com</a> → Install → разреши профиль.<br>
+        Потом: <strong style="color:#fff">Настройки → Основные → VPN и управление → Scarlet → Доверять</strong></span>
+      </li>
+      <li style="background:#111827;border-radius:12px;padding:14px 14px 14px 40px;position:relative">
+        <span style="position:absolute;left:10px;top:14px;background:#e05c2c;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800">2</span>
+        <strong>Добавь источник GLUSH</strong><br>
+        <span style="color:#999;font-size:.85rem">В Scarlet → Sources → + → вставь:</span>
+        <code id="src-url">https://sirotkinaeliz.github.io/backwoods/apps.json</code>
+        <button class="copy-btn" onclick="copySource()">Скопировать</button>
+      </li>
+      <li style="background:#111827;border-radius:12px;padding:14px 14px 14px 40px;position:relative">
+        <span style="position:absolute;left:10px;top:14px;background:#e05c2c;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800">3</span>
+        <strong>Нажми Get → установи GLUSH</strong><br>
+        <span style="color:#999;font-size:.85rem">Найди GLUSH в списке → Get → ~1 мин</span>
+      </li>
+      <li style="background:#111827;border-radius:12px;padding:14px 14px 14px 40px;position:relative">
+        <span style="position:absolute;left:10px;top:14px;background:#4caf50;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800">✓</span>
+        <strong>Открой GLUSH → разреши VPN</strong><br>
+        <span style="color:#999;font-size:.85rem">При первом запуске нажми «Разрешить» — готово 🔒</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <strong>⚠️ Про отзыв сертификата:</strong> Scarlet иногда перестаёт работать когда Apple отзывает сертификат (~раз в 1–3 мес).
+    Зайди на <a href="https://usescarlet.com" style="color:#e05c2c">usescarlet.com</a> → переустанови Scarlet → в Scarlet нажми <strong>Reinstall</strong> рядом с GLUSH.
+  </div>
+
+  <a class="releases-btn" href="https://github.com/SirotkinaEliz/backwoods/releases" target="_blank">
+    📦 Все релизы на GitHub
+  </a>
+
+  <!-- FAQ -->
+  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:20px;margin:20px 0">
+    <h3 style="margin-bottom:14px;font-size:1rem">Частые вопросы</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:.85rem;color:#bbb">
+      <div><strong style="color:#fff">iOS: Scarlet не открывается / App expired?</strong><br>
+        Зайди на usescarlet.com → переустанови Scarlet → Reinstall GLUSH</div>
+      <div><strong style="color:#fff">Android: где скачать APK?</strong><br>
+        Кнопка «Скачать APK» выше → или <a href="https://github.com/SirotkinaEliz/backwoods/releases" style="color:#2CA5E0">страница релизов</a> → ищи файл GLUSH-android-*.apk</div>
+      <div><strong style="color:#fff">Windows: нужны права администратора?</strong><br>
+        Да — WireGuard создаёт сетевой туннель и требует прав администратора. Правая кнопка → «Запустить от имени администратора».</div>
+      <div><strong style="color:#fff">macOS: «Не удаётся открыть...»?</strong><br>
+        Правая кнопка на GLUSH-VPN.app → «Открыть» → в диалоге нажми «Открыть» (обход Gatekeeper). Делается один раз.</div>
+      <div><strong style="color:#fff">macOS: нужны права sudo?</strong><br>
+        Да — при первом запуске запросит пароль администратора для создания TUN-интерфейса.</div>
+    </div>
+  </div>
+
+  <footer>
+    GLUSH · <a href="https://github.com/SirotkinaEliz/backwoods">GitHub</a> · Собирается автоматически · iOS · Android · Windows · macOS
+  </footer>
+</div>
+
+<script>
+// Fetch apps.json and update platform download links
+fetch('apps.json')
+  .then(r => r.json())
+  .then(data => {
+    const platforms = data.apps?.[0]?.platforms || {};
+
+    const setBtn = (id, url, label) => {
+      if (url) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.href = url;
+          el.textContent = label;
+          el.classList.remove('disabled');
+        }
+      }
+    };
+
+    if (platforms.android?.downloadURL)
+      setBtn('android-btn', platforms.android.downloadURL, '⬇ Скачать APK');
+    if (platforms.windows?.downloadURL)
+      setBtn('windows-btn', platforms.windows.downloadURL, '⬇ Скачать EXE');
+    if (platforms.macos?.downloadURL)
+      setBtn('macos-btn', platforms.macos.downloadURL, '⬇ Скачать APP');
+  })
+  .catch(() => {}); // silent fail
+
+function copySource() {
+  const url = document.getElementById('src-url').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    event.target.textContent = '✅ Скопировано!';
+    setTimeout(() => { event.target.textContent = 'Скопировать'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {

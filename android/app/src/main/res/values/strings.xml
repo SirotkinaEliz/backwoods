@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GLUSH</string>
+    <string name="vpn_notification_title">GLUSH VPN</string>
+    <string name="vpn_connected">VPN подключён</string>
+    <string name="vpn_disconnected">VPN отключён</string>
+    <string name="vpn_connecting">Подключение…</string>
+    <string name="btn_connect">Подключить VPN</string>
+    <string name="btn_disconnect">Отключить VPN</string>
+    <string name="btn_stop">Отключить</string>
+</resources>

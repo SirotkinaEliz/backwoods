@@ -1,0 +1,8 @@
+<resources>
+    <color name="glush_blue">#2CA5E0</color>
+    <color name="glush_purple">#7B5EA7</color>
+    <color name="glush_dark">#0f0f1a</color>
+    <color name="glush_green">#4CAF50</color>
+    <color name="glush_gray">#888888</color>
+    <color name="white">#FFFFFF</color>
+</resources>
