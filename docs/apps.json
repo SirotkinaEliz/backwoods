@@ -46,10 +46,10 @@
           "date": "2026-04-02T15:06:55Z"
         },
         "macos": {
-          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/macos-build-13/GLUSH-VPN-macos-universal.zip",
-          "size": 2525318,
+          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/macos-build-14/GLUSH-VPN-macos-universal.zip",
+          "size": 2525394,
           "minOSVersion": "10.13",
-          "date": "2026-04-02T15:05:48Z"
+          "date": "2026-04-02T15:17:48Z"
         }
       }
     }
