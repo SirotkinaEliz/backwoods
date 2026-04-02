@@ -5,7 +5,6 @@ go 1.22
 require (
 	github.com/getlantern/systray v1.2.2
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
-	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 )
 
 require (

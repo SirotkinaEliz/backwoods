@@ -59,7 +59,10 @@ jobs:
           $Env:GOOS = "windows"
           $Env:GOARCH = "amd64"
           $Env:CGO_ENABLED = "0"
-          go mod download
+          $Env:GONOSUMCHECK = "*"
+          $Env:GONOSUMDB = "*"
+          $Env:GOFLAGS = "-mod=mod"
+          go mod tidy
           go build `
             -ldflags="-H windowsgui -s -w -X main.buildVersion=build-${{ github.run_number }}" `
             -o "..\GLUSH-VPN-windows-amd64.exe" `
@@ -161,7 +164,7 @@ jobs:
       - name: Build macOS binary (Intel + Apple Silicon)
         working-directory: desktop
         run: |
-          go mod download
+          GONOSUMCHECK=* GONOSUMDB=* GOFLAGS=-mod=mod go mod tidy
 
           # Build for Intel (amd64)
           GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 \
