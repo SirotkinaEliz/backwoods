@@ -156,7 +156,7 @@ jobs:
         env:
           TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
         run: |
-          pip3 install pyyaml --quiet
+          pip3 install pyyaml --quiet --break-system-packages 2>/dev/null || pip3 install pyyaml --quiet
           echo "$TUNNEL_CONFIG_JSON" > /tmp/tunnel_input.json
           python3 scripts/json2wgconf.py \
             /tmp/tunnel_input.json \
@@ -269,7 +269,9 @@ jobs:
           git add docs/apps.json
           git diff --staged --quiet || \
             git commit -m "ci(macos): update apps.json with build-${{ github.run_number }} APP link"
+          git stash
           git pull --rebase origin main
+          git stash pop 2>/dev/null || true
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
