@@ -106,50 +106,74 @@
     ⬇️ Скачать последнюю версию GLUSH.ipa
   </a>
 
-  <div class="methods">
+  <!-- BIG STEP-BY-STEP -->
+  <div style="margin:30px 0">
 
-    <div class="method recommended">
-      <h3>SideStore <span class="rec-tag">Рекомендуется</span></h3>
-      <div class="subtitle">Без компьютера · iOS 16+ · Работает на iOS 18 и 26</div>
-      <ol class="steps">
-        <li>Установите SideStore через <a href="https://sidestore.io" target="_blank">sidestore.io</a></li>
-        <li>В SideStore откройте вкладку <strong>Browse → Sources</strong></li>
-        <li>Нажмите <strong>+</strong> и вставьте URL source выше</li>
-        <li>Найдите <strong>GLUSH</strong> → нажмите <strong>Install</strong></li>
-        <li>SideStore автоматически переподписывает приложение каждые 7 дней</li>
-      </ol>
+    <div style="background:#0a1628;border:2px solid #2CA5E0;border-radius:18px;padding:24px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#2CA5E0;color:#fff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕЗ КОМПЬЮТЕРА</span>
+        <span style="background:#1a3a1a;color:#4caf50;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">БЕСПЛАТНО</span>
+        <span style="background:#1a1a3a;color:#9c88ff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">iOS 16–26</span>
+      </div>
+      <h2 style="font-size:1.3rem;margin-bottom:4px">Установка через SideStore</h2>
+      <p style="color:#888;font-size:0.85rem;margin-bottom:20px">Переподписка происходит автоматически каждые 7 дней — делать ничего не нужно</p>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">1</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Установи SideStore</div>
+            <div style="color:#999;font-size:0.85rem">Открой в <strong style="color:#fff">Safari</strong> → <a href="https://sidestore.io" target="_blank" style="color:#2CA5E0">sidestore.io</a> → нажми <strong style="color:#fff">Install</strong></div>
+            <div style="color:#999;font-size:0.85rem;margin-top:4px">После установки: <strong style="color:#fff">Настройки → Основные → VPN и управление устройством → Доверять</strong></div>
+          </div>
+        </div>
+
+        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">2</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Создай Pairing File (один раз)</div>
+            <div style="color:#999;font-size:0.85rem">Открой SideStore → при первом запуске нажми <strong style="color:#fff">Generate Pairing File</strong> и следуй инструкции на экране</div>
+          </div>
+        </div>
+
+        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">3</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:6px">Добавь Source GLUSH</div>
+            <div style="color:#999;font-size:0.85rem;margin-bottom:8px">В SideStore → <strong style="color:#fff">Browse</strong> → <strong style="color:#fff">Sources</strong> → кнопка <strong style="color:#fff">+</strong> → вставь адрес:</div>
+            <code id="src-url" style="background:#0d0d1f;padding:8px 12px;border-radius:8px;font-size:0.78rem;color:#2CA5E0;display:block;word-break:break-all">https://sirotkinaeliz.github.io/backwoods/apps.json</code>
+            <button class="copy-btn" onclick="copySource()" style="margin-top:8px">Скопировать</button>
+          </div>
+        </div>
+
+        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+          <div style="background:#2CA5E0;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">4</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Установи GLUSH</div>
+            <div style="color:#999;font-size:0.85rem">В списке найди <strong style="color:#fff">GLUSH</strong> → нажми <strong style="color:#fff">Free</strong> → <strong style="color:#fff">Install</strong> → жди ~1 минуту</div>
+          </div>
+        </div>
+
+        <div style="background:#111827;border-radius:12px;padding:16px;display:flex;gap:14px">
+          <div style="background:#4caf50;color:#fff;min-width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">✓</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Запусти GLUSH</div>
+            <div style="color:#999;font-size:0.85rem">При первом запуске нажми <strong style="color:#fff">Разрешить</strong> на запрос VPN — готово, Telegram работает через зашифрованный туннель 🔒</div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div class="method">
-      <h3>AltStore</h3>
-      <div class="subtitle">Нужен Mac/PC 1 раз в 7 дней · iOS 14+</div>
-      <ol class="steps">
-        <li>Установите AltServer на компьютер и AltStore на iPhone с <a href="https://altstore.io" target="_blank">altstore.io</a></li>
-        <li>В AltStore откройте вкладку <strong>Browse → Sources</strong></li>
-        <li>Нажмите <strong>+</strong> и вставьте URL source выше</li>
-        <li>Найдите <strong>GLUSH</strong> → нажмите <strong>Install</strong></li>
-      </ol>
-    </div>
-
-    <div class="method">
-      <h3>Feather</h3>
-      <div class="subtitle">Без компьютера · iOS 16+ · Нужен сертификат</div>
-      <ol class="steps">
-        <li>Установите <a href="https://github.com/khcrysalis/Feather" target="_blank">Feather</a></li>
-        <li>Скачайте <code style="background:#111;padding:2px 6px;border-radius:4px;color:#2CA5E0">GLUSH.ipa</code> по ссылке выше</li>
-        <li>В Feather добавьте IPA → подпишите → установите</li>
-      </ol>
-    </div>
-
-    <div class="method">
-      <h3>Sideloadly / AltDeploy</h3>
-      <div class="subtitle">Нужен компьютер · iOS 14+ · Apple ID бесплатно</div>
-      <ol class="steps">
-        <li>Скачайте <strong>GLUSH.ipa</strong> на компьютер</li>
-        <li>Откройте <a href="https://sideloadly.io" target="_blank">Sideloadly</a>, введите Apple ID (бесплатный)</li>
-        <li>Перетащите IPA → нажмите <strong>Start</strong></li>
-        <li>На iPhone: Настройки → Основные → VPN и управление устройством → доверяйте</li>
-      </ol>
+    <!-- FAQ -->
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:20px;margin-bottom:16px">
+      <h3 style="margin-bottom:14px;font-size:1rem">Частые вопросы</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:0.85rem;color:#bbb">
+        <div><strong style="color:#fff">SideStore говорит "App expired"?</strong><br>Открой SideStore → нажми <strong style="color:#fff">Refresh All</strong></div>
+        <div><strong style="color:#fff">Не появляется запрос VPN?</strong><br>Настройки → Основные → VPN и управление устройством → GLUSH → Доверять → открой заново</div>
+        <div><strong style="color:#fff">iOS 26 — SideStore не работает?</strong><br>SideStore обновляется под новые iOS за 1–2 недели. Следи на <a href="https://sidestore.io" style="color:#2CA5E0">sidestore.io</a></div>
+      </div>
     </div>
 
   </div>

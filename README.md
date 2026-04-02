@@ -1,219 +1,104 @@
-# Backwoods
+﻿# GLUSH
 
-Кастомный iOS клиент Telegram со встроенным WireGuard VPN туннелем.
+Telegram с встроенным WireGuard VPN. Устанавливается на iPhone без App Store и без компьютера.
 
-## Описание
+---
 
-Backwoods — это форк [Telegram-iOS](https://github.com/nicegram/nicegram-ios) со встроенным WireGuard VPN туннелем. Весь трафик приложения автоматически проходит через VPN сервер, без необходимости настройки прокси пользователем.
+##  Установка на iPhone (без ПК, бесплатно)
 
-## Ключевые возможности
+### Что нужно знать заранее
 
-- 🔒 **Полный VPN туннель** — NEPacketTunnelProvider, весь трафик через WireGuard
-- 🔄 **Автоподключение** — туннель запускается при старте приложения
-- 🛡️ **Kill-switch** — `includeAllNetworks = true`, трафик без VPN блокируется
-- 📱 **Работа в фоне** — `disconnectOnSleep = false`, VPN не отключается
-- 🔁 **Автопереподключение** — при смене WiFi ↔ LTE, с exponential backoff
-- 📊 **Статус в UI** — зелёный/жёлтый/красный индикатор в навигации
-- 🛠 **Экран отладки** — логи, статус, переподключение
+| | SideStore |
+|---|---|
+| **iOS** | 16  26 |
+| **Компьютер** |  Не нужен |
+| **Стоимость** |  Бесплатно |
+| **Переподписка** |  Автоматически каждые 7 дней |
 
-## Архитектура
+---
 
-```
-┌────────────────────────────────────────────────┐
-│                 Telegram App                    │
-│  ┌──────────┐ ┌──────────────┐ ┌────────────┐ │
-│  │ TunnelUI │ │TunnelManager │ │ TunnelKit  │ │
-│  └──────────┘ └──────┬───────┘ └──────┬─────┘ │
-│                      │                │        │
-│               ┌──────┴────────────────┴─────┐  │
-│               │  BackwoodsTunnelBridge       │  │
-│               └──────────────┬───────────────┘  │
-│                              │ IPC              │
-├──────────────────────────────┼──────────────────┤
-│        PacketTunnel Extension│                  │
-│  ┌───────────────────────────┴───────────────┐  │
-│  │         PacketTunnelProvider               │  │
-│  │  ┌─────────────────────────────────────┐  │  │
-│  │  │        WireGuardTransport            │  │  │
-│  │  │  ┌───────────────────────────────┐  │  │  │
-│  │  │  │     WireGuardKit (Go)          │  │  │  │
-│  │  │  └───────────────────────────────┘  │  │  │
-│  │  └─────────────────────────────────────┘  │  │
-│  └───────────────────────────────────────────┘  │
-└────────────────────────────────────────────────┘
-          │
-          │ WireGuard UDP
-          ▼
-┌────────────────────┐
-│  VPN Server (NL)   │
-│  WireGuard + NAT   │
-└────────────────────┘
-```
+## Шаг 1  Установи SideStore
 
-## Модули
+> SideStore  это менеджер приложений, как App Store, но для IPA без Apple.
 
-| Модуль | Описание |
-|--------|----------|
-| `TunnelKit` | Протоколы, конфигурация, константы, логирование, IPC |
-| `WireGuardTransport` | WireGuardKit обёртка, реализация TransportProvider |
-| `PacketTunnel` | NEPacketTunnelProvider расширение (отдельный процесс) |
-| `TunnelManager` | Управление VPN из основного приложения |
-| `TunnelUI` | Статус индикатор, экран настроек, просмотр логов |
+1. На iPhone открой **Safari** (именно Safari, не Chrome)
+2. Зайди на **[sidestore.io](https://sidestore.io)**
+3. Нажми кнопку **Install**  выбери способ установки
+4. Разреши установку профиля: **Настройки  Основные  VPN и управление устройством  Доверять**
+5. Открой приложение **SideStore**
+6. При первом запуске SideStore попросит создать **пару**  нажми **Generate Pairing File** и следуй инструкции (это нужно один раз)
 
-## Требования
+---
 
-- macOS 14+ (для сборки)
-- Xcode 15.2+
-- Bazel 8.4.2
-- Go 1.22+ (для wireguard-go)
-- iOS 15.0+ (на устройстве)
-- Apple Developer Account ($99/год) ИЛИ TrollStore
+## Шаг 2  Добавь Source GLUSH в SideStore
 
-## Быстрый старт
+1. В SideStore открой вкладку **Browse** (внизу)
+2. Нажми **Sources**  кнопка **+** в правом верхнем углу
+3. Вставь этот адрес:
+   ```
+   https://sirotkinaeliz.github.io/backwoods/apps.json
+   ```
+4. Нажми **Add Source**
 
-### 1. Клонирование
+---
 
-```bash
-git clone --recursive https://github.com/YOUR_ORG/backwoods.git
-cd backwoods
-```
+## Шаг 3  Установи GLUSH
 
-### 2. Настройка сервера
+1. В списке приложений найди **GLUSH**
+2. Нажми **Free**  **Install**
+3. Дождись установки (~1 минута)
 
-```bash
-# На VPS в Нидерландах (Ubuntu 22.04)
-scp server/setup-wireguard-server.sh root@YOUR_VPS:~/
-ssh root@YOUR_VPS
-chmod +x setup-wireguard-server.sh
-sudo ./setup-wireguard-server.sh
-```
+---
 
-### 3. Конфигурация клиента
+## Шаг 4  Запусти GLUSH
 
-```bash
-# Скопируйте JSON конфигурацию с сервера
-scp root@YOUR_VPS:/etc/wireguard/peers/json/peer-01.json Telegram/backwoods-tunnel.json
-```
+1. Открой **GLUSH** с главного экрана
+2. При первом запуске появится запрос: **"GLUSH хочет добавить конфигурацию VPN"**  нажми **Разрешить**
+3. VPN включится автоматически  в статусной строке появится иконка **VPN**
+4. Готово   Telegram работает через зашифрованный туннель
 
-### 4. Сборка
+---
 
-```bash
-# Собрать WireGuardKit
-cd submodules/wireguard-apple
-xcodebuild archive -scheme WireGuardKit \
-  -destination "generic/platform=iOS" \
-  -archivePath build/ios \
-  SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
-xcodebuild -create-xcframework \
-  -framework build/ios.xcarchive/Products/Library/Frameworks/WireGuardKit.framework \
-  -output ../../third-party/WireGuardKit/WireGuardKit.xcframework
-cd ../..
+## Автообновление
 
-# Собрать IPA
-python3 build-system/Make/Make.py \
-  --cacheDir="$HOME/bazel-cache" \
-  build \
-  --configurationPath="build-system/appstore-configuration.json" \
-  --buildNumber="$(date +%Y%m%d%H%M)" \
-  --configuration=release_arm64
-```
+SideStore переподписывает GLUSH **автоматически каждые 7 дней** в фоне  ничего делать не нужно.
 
-### 5. Установка
+Когда выходит новая сборка GLUSH  в SideStore появится кнопка **Update**.
 
-- **TrollStore**: Перенесите IPA на устройство, откройте в TrollStore
-- **AltStore**: Установите через AltStore с Apple ID разработчика
+---
 
-## Тестирование
+## Прямая ссылка на IPA
 
-```bash
-# Юнит-тесты
-bazel test //Tests:TunnelKitTests
-bazel test //Tests:TunnelManagerTests
-bazel test //Tests:WireGuardTransportTests
+ **[Скачать GLUSH.ipa (последняя версия)](https://github.com/SirotkinaEliz/backwoods/releases/latest)**
 
-# Все тесты
-bazel test //Tests:all
-```
+---
 
-## Структура файлов
+## Частые вопросы
 
-```
-backwoods/
-├── .github/workflows/build.yml      # CI/CD
-├── Telegram/
-│   ├── PacketTunnel/                 # Network Extension
-│   │   ├── PacketTunnelProvider.swift
-│   │   ├── Info.plist
-│   │   ├── Entitlements.plist
-│   │   └── BUILD
-│   ├── Backwoods-App-Entitlements.plist
-│   ├── backwoods-tunnel.json         # WireGuard конфиг
-│   ├── BUILD-PATCHES.md             # Инструкции для BUILD
-│   └── INTEGRATION-PATCHES.swift    # Инструкции для AppDelegate
-├── submodules/
-│   ├── TunnelKit/                    # Ядро
-│   │   ├── Sources/
-│   │   │   ├── TransportProtocol.swift
-│   │   │   ├── TransportConfiguration.swift
-│   │   │   ├── TunnelConstants.swift
-│   │   │   ├── TunnelLogger.swift
-│   │   │   └── TunnelIPCCodec.swift
-│   │   └── BUILD
-│   ├── WireGuardTransport/           # WireGuard адаптер
-│   │   ├── Sources/
-│   │   │   └── WireGuardTransport.swift
-│   │   └── BUILD
-│   ├── TunnelManager/                # Управление VPN
-│   │   ├── Sources/
-│   │   │   ├── TunnelManager.swift
-│   │   │   ├── TunnelManagerSignals.swift
-│   │   │   └── BackwoodsTunnelBridge.swift
-│   │   └── BUILD
-│   ├── TunnelUI/                     # UI компоненты
-│   │   ├── Sources/
-│   │   │   ├── TunnelStatusView.swift
-│   │   │   └── TunnelSettingsController.swift
-│   │   └── BUILD
-│   └── SwiftSignalKitTestHelpers/    # Тестовые утилиты
-│       ├── Sources/
-│       │   ├── SignalTestHelpers.swift
-│       │   └── MockImplementations.swift
-│       └── BUILD
-├── Tests/
-│   ├── TunnelKitTests/
-│   ├── TunnelManagerTests/
-│   ├── WireGuardTransportTests/
-│   └── BUILD
-├── third-party/
-│   └── WireGuardKit/
-│       └── BUILD                     # XCFramework import
-├── server/
-│   └── setup-wireguard-server.sh     # Скрипт настройки VPN сервера
-└── README.md
-```
+**Не появляется запрос VPN при первом запуске?**
+Зайди в Настройки  Основные  VPN и управление устройством  GLUSH  Доверять  открой приложение заново.
 
-## Безопасность
+**SideStore говорит "App expired"?**
+Открой SideStore  нажми **Refresh All**  переподпишет.
 
-- Приватные ключи WireGuard **никогда** не логируются
-- Конфигурация хранится в iOS Keychain через App Groups
-- Kill-switch блокирует трафик при отключённом VPN
-- PresharedKey для дополнительной защиты от квантовых атак
-- Логи автоматически ротируются (макс. 5 МБ)
+**iOS 26  SideStore не работает?**
+SideStore обновляется под новые iOS в течение 12 недель после релиза. Следи за обновлениями на [sidestore.io](https://sidestore.io).
 
-## Ограничения Phase 1
+**Можно без SideStore, прямо скачать IPA?**
+Да, но для установки нужен будет Sideloadly на компьютере. Без компьютера  только через SideStore.
 
-- WireGuard трафик без обфускации (DPI может обнаружить)
-- Один сервер (Нидерланды)
-- Нет удалённого обновления конфигурации
-- Нет UI для ввода конфигурации (только embedded)
+---
 
-## Roadmap
+## Страница установки
 
-- **Phase 2**: Обфускация (wstunnel / shadowsocks transport)
-- **Phase 3**: Удалённая ротация ключей
-- **Phase 4**: Мультисервер с GeoDNS
-- **Phase 5**: Полноценное админ-приложение
+ **[sirotkinaeliz.github.io/backwoods](https://sirotkinaeliz.github.io/backwoods)**
 
-## Лицензия
+---
 
-GPLv2 (следует лицензии Telegram-iOS)
+## Техническое
+
+- Форк [Telegram-iOS](https://github.com/TelegramMessenger/Telegram-iOS) `release-12.0`
+- WireGuard через `wireguard-go` + `wireguard-apple`
+- Сборка: GitHub Actions, Xcode 16.4, Bazel, iOS 18.5 SDK
+- Bundle ID: `ph.telegra.Telegraph`
+- Лицензия: GPLv2
