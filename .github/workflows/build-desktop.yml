@@ -135,9 +135,11 @@ jobs:
           git diff --staged --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m "ci(windows): update apps.json with build-${{ github.run_number }} EXE link"
-            git pull --rebase origin main
-            git push origin main
           }
+          git stash 2>$null
+          git pull --rebase origin main
+          git stash pop 2>$null
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
