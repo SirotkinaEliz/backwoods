@@ -33,6 +33,11 @@ jobs:
         env:
           TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
         run: |
+          # Create placeholder first — ensures go embed always has a file to embed
+          # even if secret parsing fails (app will build but VPN won't connect with placeholder)
+          $placeholder = "[Interface]`nPrivateKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=`nAddress = 10.0.0.2/24`n`n[Peer]`nPublicKey = BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=`nEndpoint = 91.84.96.45:51820`nAllowedIPs = 0.0.0.0/0`nPersistentKeepalive = 25"
+          $placeholder | Out-File -Encoding utf8 "desktop\cmd\glush-vpn\tunnel.conf"
+          # Try to overwrite with real config from secret
           pip install pyyaml --quiet
           $Env:TUNNEL_CONFIG_JSON | Out-File -Encoding utf8 "$Env:TEMP\tunnel_input.json"
           python scripts/json2wgconf.py `
@@ -159,6 +164,9 @@ jobs:
         env:
           TUNNEL_CONFIG_JSON: ${{ secrets.TUNNEL_CONFIG_JSON }}
         run: |
+          # Placeholder first — go embed needs the file to exist at build time
+          printf '[Interface]\nPrivateKey = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAddress = 10.0.0.2/24\n\n[Peer]\nPublicKey = BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=\nEndpoint = 91.84.96.45:51820\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n' > desktop/cmd/glush-vpn/tunnel.conf
+          # Overwrite with real config
           pip3 install pyyaml --quiet --break-system-packages 2>/dev/null || pip3 install pyyaml --quiet
           echo "$TUNNEL_CONFIG_JSON" > /tmp/tunnel_input.json
           python3 scripts/json2wgconf.py \

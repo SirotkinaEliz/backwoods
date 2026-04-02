@@ -49,6 +49,10 @@ var (
 )
 
 func main() {
+	// On Windows: extract embedded wintun.dll next to the EXE before WireGuard loads it.
+	// This is a no-op on other platforms (build-tag guarded).
+	extractWintun()
+
 	if !isAdmin() {
 		showElevationError()
 		os.Exit(1)
