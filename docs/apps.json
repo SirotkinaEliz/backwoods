@@ -34,10 +34,10 @@
           "date": "2026-04-01T21:12:38Z"
         },
         "android": {
-          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/android-build-12/GLUSH-android-12.apk",
-          "size": 7076457,
+          "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/android-build-13/GLUSH-android-13.apk",
+          "size": 7076459,
           "minOSVersion": "5.0",
-          "date": "2026-04-02T14:50:22Z"
+          "date": "2026-04-02T15:07:32Z"
         },
         "windows": {
           "downloadURL": "https://github.com/SirotkinaEliz/backwoods/releases/download/windows-build-13/GLUSH-VPN-windows-amd64.exe",
