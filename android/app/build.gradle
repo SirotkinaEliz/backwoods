@@ -1,58 +1,56 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace = "com.glush.vpn"
-    compileSdk = 34
+    namespace 'com.glush.vpn'
+    compileSdk 34
 
     defaultConfig {
-        applicationId = "com.glush.vpn"
-        minSdk = 21          // Android 5.0 Lollipop
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        applicationId 'com.glush.vpn'
+        minSdk 21          // Android 5.0 Lollipop
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("debug") // debug-signed for sideloading
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                'proguard-rules.pro'
+            signingConfig signingConfigs.debug // debug-signed for sideloading
         }
         debug {
-            isDebuggable = true
+            debuggable true
         }
     }
 
     buildFeatures {
-        viewBinding = true
+        viewBinding true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = '1.8'
     }
 }
 
 dependencies {
     // WireGuard Android tunnel library (official, from WireGuard project)
-    implementation("com.wireguard.android:tunnel:1.0.20230724")
+    implementation 'com.wireguard.android:tunnel:1.0.20230724'
 
     // Android core
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 }

@@ -50,11 +50,9 @@ jobs:
       - name: Build Release APK
         working-directory: backwoods/android
         run: |
-          chmod +x gradlew 2>/dev/null || true
-          # Generate Gradle wrapper if missing
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 8.4
-          fi
+          # Install Gradle wrapper
+          gradle wrapper --gradle-version 8.4 --distribution-type bin
+          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace \
             -Pandroid.injected.signing.store.file="" \
             -Pandroid.injected.signing.key.alias="" \
