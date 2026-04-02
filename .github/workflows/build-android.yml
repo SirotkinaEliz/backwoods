@@ -53,11 +53,7 @@ jobs:
           # Install Gradle wrapper
           gradle wrapper --gradle-version 8.4 --distribution-type bin
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace \
-            -Pandroid.injected.signing.store.file="" \
-            -Pandroid.injected.signing.key.alias="" \
-            -Pandroid.injected.signing.store.password="" \
-            -Pandroid.injected.signing.key.password=""
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       # ── 6. Rename APK ────────────────────────────────────────────────────────
       - name: Rename APK
