@@ -1,11 +1,11 @@
 package com.glush.vpn
 
-import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import androidx.multidex.MultiDexApplication
 
-class GlushApp : Application() {
+class GlushApp : MultiDexApplication() {
 
     companion object {
         lateinit var instance: GlushApp

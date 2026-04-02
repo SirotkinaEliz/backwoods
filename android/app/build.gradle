@@ -13,6 +13,7 @@ android {
         targetSdk 34
         versionCode 1
         versionName '1.0'
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -32,15 +33,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 }
 
 dependencies {
+    // Core library desugaring (required for Java 14+ features on API < 26)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
     // WireGuard Android tunnel library (official, from WireGuard project)
     implementation 'com.wireguard.android:tunnel:1.0.20230706'
 
@@ -48,9 +53,11 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // MultiDex support
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
